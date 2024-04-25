@@ -1,4 +1,5 @@
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import com.example.a1.R
 import androidx.compose.material3.Button
 
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.input.KeyboardType
 
 
@@ -36,80 +38,95 @@ fun LoginScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFE4E4FC),
+                        Color(0xFFFAE8E1)
+                    )
+                )
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
+
     ) {
-        Spacer(modifier = Modifier.height(50.dp)) // 可以调整这个值来放置你的文字
-        Text(
-            text = "Welcome to FitnessHub",
-            modifier = Modifier.fillMaxWidth(), // 确保Text占满容器的宽度
-            textAlign = TextAlign.Center, // 文本居中对齐
-            style = MaterialTheme.typography.h4, // 根据需要调整字体大小
-
-        )
-        Spacer(modifier = Modifier.height(40.dp))
-        androidx.compose.material3.OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        androidx.compose.material3.OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { /* TODO: Handle sign in */ },
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6E14FF))
-        ) {
-            Text(text = "Sign in", color = Color.White)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        Text("Or Continue with")
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.f),
-                contentDescription = "Facebook Login",
-                modifier = Modifier
-                    .size(48.dp)
-                    .clickable { /* Handle Facebook Login */ }
-            )
-            Image(
-                painter = painterResource(id = R.drawable.g),
-                contentDescription = "Google Login",
-                modifier = Modifier
-                    .size(48.dp)
-                    .clickable { /* Handle Google Login */ }
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        ClickableText(
-            text = buildAnnotatedString {
-                append("Don't have account yet? ")
-                withStyle(style = SpanStyle(color = Color.Blue)) {
-                    append("Sign up now")
-                }
-            },
-            onClick = {
+                .fillMaxSize()
+                .padding(30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Spacer(modifier = Modifier.height(50.dp)) //
+            Text(
+                text = "Welcome to FitnessHub",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center, //
+                style = MaterialTheme.typography.h4,
 
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+            androidx.compose.material3.OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            androidx.compose.material3.OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { /* TODO: Handle sign in */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6E14FF))
+            ) {
+                Text(text = "Sign in", color = Color.White)
             }
-        )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+//            Row(
+//                horizontalArrangement = Arrangement.SpaceEvenly,
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.f),
+//                    contentDescription = "Facebook Login",
+//                    modifier = Modifier
+//                        .size(48.dp)
+//                        .clickable { /* Handle Facebook Login */ }
+//                )
+//                Image(
+//                    painter = painterResource(id = R.drawable.g),
+//                    contentDescription = "Google Login",
+//                    modifier = Modifier
+//                        .size(48.dp)
+//                        .clickable { /* Handle Google Login */ }
+//                )
+//            }
+            Spacer(modifier = Modifier.height(16.dp))
+            ClickableText(
+                text = buildAnnotatedString {
+                    append("Don't have account yet? ")
+                    withStyle(style = SpanStyle(color = Color.Blue)) {
+                        append("Sign up now")
+                    }
+                },
+                onClick = {
+
+                }
+            )}
+
     }
 }
 

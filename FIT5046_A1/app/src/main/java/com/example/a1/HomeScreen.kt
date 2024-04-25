@@ -53,14 +53,14 @@ fun HomeScreen(navController: NavHostController) {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFE4E4FC), // 渐变开始颜色
-                        Color(0xFFFAE8E1)  // 渐变结束颜色
+                        Color(0xFFE4E4FC), // background color
+                        Color(0xFFFAE8E1)
                     )
                 )
             )
     ) {
         item {
-            // 添加一个 Row 以包含“Hi”文本和用户头像
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,30 +81,21 @@ fun HomeScreen(navController: NavHostController) {
                         .padding(start = 180.dp)
                 ) {
                     Text(
-                        text = "Hi,  ",
+                        text = "Hi, Bella",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF151C57),
                         modifier = Modifier
                             .padding(vertical = 14.dp)
                     )
-                    Image(
-                        painter = painterResource(id = R.drawable.user_avatar), // 替换成你的头像资源ID
-                        contentDescription = "User Avatar",
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
                 }
 
             }
         }
         item {
-            CircularProgress(progress = 0.8f) // 圆形进度条和百分比的函数
+            CircularProgress(progress = 0.8f)
         }
 //        item {
-//            // 百分比
 //            Text(
 //                text = "85%",
 //                color = Color(0xFF151C57),
@@ -118,20 +109,20 @@ fun HomeScreen(navController: NavHostController) {
         item {
             // 提示信息
             Text(
-                text = "Cheer up, Bella! You have LIGHTLY ACTIVE today, Keep moving!",
+                text = "Cheer up, Bella! You have reach 80% CALORIES GOAL today, Keep moving!",
                 color = Color(0xFF8E91B9),
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center, // 添加这行代码来实现水平居中
+                textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 40.dp) // 修改padding来包含水平padding
+                    .padding(vertical = 8.dp, horizontal = 40.dp)
             )
         }
         item { WeatherCard() }
-        item { StepCard(navController = navController)} // 步数卡片
-        item { CalorieCard() } // 卡路里卡片
-        item { SleepCard() } // 睡眠卡片
-        item { HeartRateCard() } // 心率卡片
+        item { StepCard(navController = navController)} // step card
+        item { CalorieCard() } // calorie card
+        item { SleepCard() } // sleep card
+        item { HeartRateCard() } //
     }
 }
 
@@ -202,17 +193,17 @@ fun WeatherCard() {
             containerColor = Color.White
         )
     ) {
-        Box( // 使用 Box 来居中内容
-            contentAlignment = Alignment.Center, // 在 Box 内居中对齐
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp) // 这里的padding用于在Box内部创建间距
+                .padding(16.dp)
         ) {
             Text(
                 text = "Temperature 18, mostly sunny, L: 14 H: 21",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF151C57),
-                textAlign = TextAlign.Center // 文本居中对齐
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -226,14 +217,11 @@ fun StepCard(navController: NavHostController) {
             .fillMaxWidth()
             .padding(12.dp)
             .clickable { /* */ }
-            .heightIn(min = 100.dp)
-            .clickable {
-                navController.navigate("reportScreen") // 跳转到 reportScreen
-            },
+            .heightIn(min = 100.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White  // 设置卡片的背景色
+            containerColor = Color.White
         )
     ) {
         Column(
@@ -253,13 +241,12 @@ fun CalorieCard() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp)
-            .clickable { /* 点击处理 */ }
+            .clickable { /*  */ }
             .heightIn(min = 100.dp),
-
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White  // 设置卡片的背景色
+            containerColor = Color.White
         )
     ) {
         Column(
@@ -284,7 +271,7 @@ fun SleepCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White  // 设置卡片的背景色
+            containerColor = Color.White
         )
     ) {
         Column(
@@ -304,12 +291,12 @@ fun HeartRateCard() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp)
-            .clickable { /* 点击处理 */ }
+            .clickable { /*  */ }
             .heightIn(min = 100.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White  // 设置卡片的背景色
+            containerColor = Color.White
         )
     ) {
         Column(

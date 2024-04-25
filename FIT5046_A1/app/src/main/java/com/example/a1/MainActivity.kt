@@ -64,10 +64,12 @@ class MainActivity : ComponentActivity() {
                         startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        //nav bar
                         composable("home") { HomeScreen(navController) }
-                        composable("history") { LoginScreen() }
+                        composable("report") { ReportScreen(navController)}
+                        composable("activity") { LoginScreen() }
                         composable("account") { ReportScreen(navController) }
-                        composable("reportScreen") { ReportScreen(navController)}
+
                     }
                 }
             }
@@ -86,22 +88,25 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
             backgroundColor = Color.White,
             contentColor = contentColorFor(backgroundColor = Color.White)
         ) {
+            //nav bar items and click logic
+            //home page
             BottomNavigationItem(
-
                 modifier = Modifier
                     .padding(top = 6.dp),
                 icon = {
-                    if (currentRoute != "history" && currentRoute != "account") {
+                    if (currentRoute == "home") {
                         Icon(
                             painterResource(id = R.drawable.home2), // 选中时的图标
                             contentDescription = "Home2",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = Color(0xFF1B225C)
                         )
                     }else {
                         Icon(
                             painterResource(id = R.drawable.home), // 未选中时的图标
                             contentDescription = "Home",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Unspecified
                         )
                     }
                 },
@@ -111,31 +116,61 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                     navController.navigate("home")
                 }
             )
+            //report page
             BottomNavigationItem(
                 modifier = Modifier
                     .padding(top = 6.dp),
                 icon = {
-                    if (currentRoute == "history") {
+                    if (currentRoute == "report") {
                         Icon(
-                            painterResource(id = R.drawable.history2), // 选中时的图标
+                            painterResource(id = R.drawable.report2), // 选中时的图标
                             contentDescription = "History2",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = Color(0xFF1B225C)
                         )
                     } else {
                         Icon(
-                            painterResource(id = R.drawable.history), // 未选中时的图标
+                            painterResource(id = R.drawable.report), // 未选中时的图标
                             contentDescription = "History",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Unspecified
                         )
                     }
                 },
-                label = { Text("History", fontSize = 12.sp) },
-                selected = navController.currentDestination?.route == "history",
+                label = { Text("Report", fontSize = 12.sp) },
+                selected = navController.currentDestination?.route == "report",
                 onClick = {
-                    navController.navigate("history")
+                    navController.navigate("report")
                 }
             )
-
+            //history page
+            BottomNavigationItem(
+                modifier = Modifier
+                    .padding(top = 6.dp),
+                icon = {
+                    if (currentRoute == "activity") {
+                        Icon(
+                            painterResource(id = R.drawable.activity2), // 选中时的图标
+                            contentDescription = "History2",
+                            modifier = Modifier.size(24.dp),
+                            tint = Color(0xFF1B225C)
+                        )
+                    } else {
+                        Icon(
+                            painterResource(id = R.drawable.activity), // 未选中时的图标
+                            contentDescription = "History",
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Unspecified
+                        )
+                    }
+                },
+                label = { Text("Activity", fontSize = 12.sp) },
+                selected = navController.currentDestination?.route == "activity",
+                onClick = {
+                    navController.navigate("activity")
+                }
+            )
+            //account page
             BottomNavigationItem(
                 modifier = Modifier
                     .padding(top = 6.dp),
@@ -144,13 +179,15 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                         Icon(
                             painterResource(id = R.drawable.account2), // 选中时的图标
                             contentDescription = "Account2",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = Color(0xFF1B225C)
                         )
                     } else {
                         Icon(
                             painterResource(id = R.drawable.account), // 未选中时的图标
                             contentDescription = "Account",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Unspecified
                         )
                     }
                 },
