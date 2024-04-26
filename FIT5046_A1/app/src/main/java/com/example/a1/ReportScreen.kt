@@ -88,11 +88,11 @@ fun ReportScreen(navController: NavHostController) {
 
                     //date picker
                     Box(
-                        contentAlignment = Alignment.Center,  // 居中图标
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(width = 46.dp, height = 34.dp)  // 自定义尺寸
-                            .background(color = Color.White, shape = RoundedCornerShape(10.dp))  // 设置背景和形状
-                            .clickable {  // 添加点击事件
+                            .size(width = 46.dp, height = 34.dp)
+                            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                            .clickable {
                                 showDatePicker(context) { selectedDate ->
                                     Toast.makeText(context, "Selected date: $selectedDate", Toast.LENGTH_LONG).show()
                                 }

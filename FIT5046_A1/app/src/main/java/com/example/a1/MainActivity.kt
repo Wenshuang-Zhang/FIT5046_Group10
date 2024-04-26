@@ -1,8 +1,7 @@
 package com.example.a1
 
 import LoginScreen
-import LoginScreenPreview
-import android.media.Image
+
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -20,7 +19,6 @@ import com.example.a1.ui.theme.A1Theme
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
 //noinspection UsingMaterialAndMaterial3Libraries
@@ -37,13 +35,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material3.*
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.currentBackStackEntryAsState
 

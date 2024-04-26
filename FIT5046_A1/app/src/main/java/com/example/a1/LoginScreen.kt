@@ -1,6 +1,4 @@
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -10,24 +8,19 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.a1.R
 import androidx.compose.material3.Button
 
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.a1.SignUpScreen
 
 
 @Composable
@@ -115,6 +108,8 @@ fun LoginScreen() {
 //                )
 //            }
             Spacer(modifier = Modifier.height(16.dp))
+
+            //sign up text
             ClickableText(
                 text = buildAnnotatedString {
                     append("Don't have account yet? ")
@@ -122,7 +117,7 @@ fun LoginScreen() {
                         append("Sign up now")
                     }
                 },
-                onClick = {
+                onClick = { offset ->
 
                 }
             )}
@@ -130,8 +125,8 @@ fun LoginScreen() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun LoginScreenPreview() {
+//    LoginScreen(navController)
+//}
