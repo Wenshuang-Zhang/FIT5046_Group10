@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") { HomeScreen(navController) }
                         composable("report") { ReportScreen(navController)}
                         composable("activity") { LoginScreen() }
-                        composable("account") { ReportScreen(navController) }
+                        composable("account") {  }
 
                     }
                 }
