@@ -24,10 +24,13 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.a1.R
 import com.example.a1.SignUpScreen
 import com.example.a1.showDatePicker
+
+import com.google.firebase.auth.FirebaseAuth
 
 
 
@@ -35,6 +38,8 @@ import com.example.a1.showDatePicker
 fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var loginError by remember { mutableStateOf(false) } // To handle login errors
+    val auth = FirebaseAuth.getInstance()  // Firebase Auth instance
 
     Column(
         modifier = Modifier
@@ -53,10 +58,10 @@ fun LoginScreen(navController: NavHostController) {
     ) {
         //back icon
         Box(
-            contentAlignment = Alignment.TopStart, // 将内容对齐到左上角
+            contentAlignment = Alignment.TopStart,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 22.dp, start = 18.dp) // 在顶部和开始（左边）添加内边距
+                .padding(top = 22.dp, start = 18.dp)
         ) {
             androidx.compose.material3.Icon(
                 painter = painterResource(id = R.drawable.back),
@@ -77,24 +82,29 @@ fun LoginScreen(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ){
-            Spacer(modifier = Modifier.height(50.dp)) //
+
+            //title
+            //Spacer(modifier = Modifier.height(1.dp)) //
             Text(
                 text = "Welcome to FitnessHub",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center, //
                 style = MaterialTheme.typography.h4,
-
             )
-            Spacer(modifier = Modifier.height(40.dp))
-            androidx.compose.material3.OutlinedTextField(
+
+            //email input
+            Spacer(modifier = Modifier.height(30.dp))
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
+
+            //password input
             Spacer(modifier = Modifier.height(16.dp))
-            androidx.compose.material3.OutlinedTextField(
+            OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
@@ -103,27 +113,57 @@ fun LoginScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
 
-            //login button
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    navController.navigate("home") {
-                    popUpTo("login") { inclusive = true }
-                } },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(30),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6E14FF))
-            ) {
-                Text(text = "Sign in", color = Color.White)
+            if (loginError) {
+                Text("Invalid email or password. Please try again.", color = Color.Red)
             }
 
+            Spacer(modifier = Modifier.height(26.dp))
+
+            //sign in button
+            Button(
+                onClick = {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            } else {
+                                loginError = true
+                            }
+                        }
+                },
+                modifier = Modifier
+                    .height(50.dp)
+                    .width(180.dp),
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF776EE3))
+            ) {
+                Text(text = "Sign in", color = Color.White, fontSize = 16.sp)
+            }
+
+
+//            //login button
+//            Spacer(modifier = Modifier.height(26.dp))
+//            Button(
+//                onClick = {
+//                    navController.navigate("home") {
+//                    popUpTo("login") { inclusive = true }
+//                } },
+//                modifier = Modifier
+//                    .height(50.dp)
+//                    .width(180.dp),
+//                shape = RoundedCornerShape(25.dp),
+//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF776EE3))
+//            ) {
+//                Text(text = "Sign in", color = Color.White, fontSize = (16.sp))
+//            }
+
             //google sign in icon
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(26.dp))
             Text(text = "Or continue with")
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -143,29 +183,8 @@ fun LoginScreen(navController: NavHostController) {
                             .size(48.dp)
                     )
                 }
-
             }
-
-            //jump to Sign up
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            //sign up button
-//            Text(
-//                text = "Don't have account yet? "
-//            )
-//            Spacer(modifier = Modifier.height(10.dp))
-//            Button(
-//                onClick = { navController.navigate("signup") },
-//                modifier = Modifier
-//                    .width(200.dp)
-//                    .height(48.dp),
-//                shape = RoundedCornerShape(30),
-//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF909EEA))
-//            ) {
-//                Text(text = "Sign up now", color = Color.White)
-//            }
         }
-
     }
 }
 

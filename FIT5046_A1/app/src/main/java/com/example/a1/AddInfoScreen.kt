@@ -1,19 +1,26 @@
 package com.example.a1
 
 import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -21,6 +28,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
+
+import androidx.compose.ui.text.font.FontWeight
 import java.util.*
 
 @Composable
@@ -33,19 +44,52 @@ fun AddInfoScreen(navController: NavHostController) {
     var weight by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) } //
+    var userHasInteracted by remember { mutableStateOf(false) }
 
     val sexOptions = listOf("Female", "Male", "Other", "Prefer not to say")
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    val uid = user?.uid  // Get the current user's UID
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFE4E4FC), // Top half background color
+                        Color(0xFFFAE8E1)  // Bottom half background color
+                    )
+                )
+            )
+    )
+    {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        //verticalArrangement = Arrangement.Center
     ) {
+
+        //title
+        Spacer(modifier = Modifier.height(40.dp))
         Text(
             "Personalise Fitness and Health Details",
-            fontSize = 20.sp,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = Color(0xFF151C57),
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //sub title
+        Text(
+            "This information ensures Fitness and Health data are as accurate as possible",
+            fontSize = 16.sp,
+            color = Color(0xFF8E91B9),
+            textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(modifier = Modifier.height(24.dp))
@@ -53,13 +97,17 @@ fun AddInfoScreen(navController: NavHostController) {
         // Name input
         OutlinedTextField(
             value = name,
-            onValueChange = { if (it.all { char -> char.isLetter()} && it.length <= 20) name = it },
+            onValueChange = {
+                name = it
+                userHasInteracted = true
+            },
             label = { Text("Name (letters only)") },
-            isError = showError,
+
+            isError = userHasInteracted && (!name.all { char -> char.isLetter()} || name.length > 20 || name.isBlank()),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             singleLine = true,
             trailingIcon = {
-                if (showError) {
+                if (userHasInteracted && (!name.all { char -> char.isLetter()} || name.length > 20 || name.isBlank())) {
                     Icon(
                         imageVector = Icons.Default.Error,
                         contentDescription = "Error",
@@ -68,7 +116,7 @@ fun AddInfoScreen(navController: NavHostController) {
                 }
             }
         )
-        if (showError) {
+        if (userHasInteracted && (!name.all { char -> char.isLetter()} || name.length > 20 || name.isBlank())) {
             Text(
                 "Please enter only letters, no more than 20 characters",
                 color = MaterialTheme.colors.error,
@@ -76,7 +124,6 @@ fun AddInfoScreen(navController: NavHostController) {
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )
         }
-
         Spacer(Modifier.height(8.dp))
 
         // Date of Birth input
@@ -97,7 +144,7 @@ fun AddInfoScreen(navController: NavHostController) {
                         calendar.get(Calendar.MONTH),
                         calendar.get(Calendar.DAY_OF_MONTH)
                     ).apply {
-                        datePicker.maxDate = calendar.timeInMillis  // 设置最大日期为当前日期
+                        datePicker.maxDate = calendar.timeInMillis  //set the latest time is today
                     }.show()
                 }) {
                     Icon(Icons.Filled.CalendarToday, contentDescription = "Select Date")
@@ -125,7 +172,7 @@ fun AddInfoScreen(navController: NavHostController) {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                offset = DpOffset(x = 0.dp, y = 0.dp), // 根据需要调整这个位置
+                offset = DpOffset(x = 0.dp, y = 0.dp),
                 modifier = Modifier.align(Alignment.BottomStart)
             ) {
                 sexOptions.forEach { label ->
@@ -140,12 +187,13 @@ fun AddInfoScreen(navController: NavHostController) {
         }
         Spacer(Modifier.height(8.dp))
 
+
         // Height input
         OutlinedTextField(
             value = height,
             onValueChange = { height = it },
             label = { Text("Height (cm)") },
-            isError = height.toIntOrNull() !in 1..400 && height.isNotBlank(),  // 检查数值是否在允许的范围之外
+            isError = height.toIntOrNull() !in 1..400 && height.isNotBlank(),  // check input content
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             trailingIcon = {
@@ -174,7 +222,7 @@ fun AddInfoScreen(navController: NavHostController) {
             value = weight,
             onValueChange = { weight = it },
             label = { Text("Weight (kg)") },
-            isError = weight.toIntOrNull() !in 1..400 && weight.isNotBlank(),  // 检查数值是否在允许的范围之外
+            isError = weight.toIntOrNull() !in 1..400 && weight.isNotBlank(),  // check input content
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             trailingIcon = {
@@ -198,26 +246,51 @@ fun AddInfoScreen(navController: NavHostController) {
 
         Spacer(Modifier.height(24.dp))
 
+        //upload user info to firebase
         Button(
+            shape = RoundedCornerShape(25.dp),
             modifier = Modifier
                 .height(50.dp)
-                .width(200.dp),
+                .width(180.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFF776EE3)),
             onClick = {
-                showError = true // Show errors if any validation fails
+                showError = true
                 if (name.isNotBlank() && dateOfBirth.isNotBlank() && sex.isNotBlank() &&
                     height.toIntOrNull() in 1..400 && weight.toIntOrNull() in 1..400) {
                     showError = false
-                    // Implement navigation or further processing logic here
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
+
+                    // Firestore instance
+                    val db = FirebaseFirestore.getInstance()
+                    val userInfo = hashMapOf(
+                        "name" to name,
+                        "dateOfBirth" to dateOfBirth,
+                        "sex" to sex,
+                        "height" to height,
+                        "weight" to weight
+                    )
+                    if (uid != null) {
+                        db.collection("usersInfo").document(uid).set(userInfo)
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Information saved successfully", Toast.LENGTH_SHORT).show()
+                                navController.navigate("home") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("Firestore", "Error adding document", e)
+                                Toast.makeText(context, "Failed to save information: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                    } else {
+                        Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
                     }
-                }else {
+                } else {
                     Toast.makeText(context, "Invalid input, please enter again", Toast.LENGTH_SHORT).show()
                 }
             }
         ) {
             Text("Fitness Now!", fontSize = 16.sp)
         }
+    }
     }
 
 }

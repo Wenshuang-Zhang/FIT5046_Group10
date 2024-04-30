@@ -4,6 +4,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -61,26 +62,31 @@ fun WelcomeScreen(navController: NavController) {
                     .fillMaxWidth()
                     .padding(32.dp)
             ) {
+
                 //login button
                 Spacer(modifier = Modifier.height(450.dp))
                 Button(
                     onClick = { navController.navigate("login") },
                     modifier = Modifier
                         .height(50.dp)
-                        .width(200.dp),
+                        .width(180.dp),
+                    shape = RoundedCornerShape(25.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
                 ) {
-                    Text("Login", color = Color(0xFF6E14FF), modifier = Modifier.padding(6.dp), fontSize = 16.sp)
+                    Text("Login", color = Color(0xFF776EE3), modifier = Modifier.padding(6.dp), fontSize = 16.sp)
                 }
+
+                //sign up button
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navController.navigate("signup") },
                     modifier = Modifier
                         .height(50.dp)
-                        .width(200.dp),
+                        .width(180.dp),
+                    shape = RoundedCornerShape(25.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
                 ) {
-                    Text("Sign Up", color = Color(0xFF6E14FF), modifier = Modifier.padding(6.dp), fontSize = 16.sp)
+                    Text("Sign Up", color = Color(0xFF776EE3), modifier = Modifier.padding(6.dp), fontSize = 16.sp)
                 }
             }
             Spacer(modifier = Modifier.height(50.dp))

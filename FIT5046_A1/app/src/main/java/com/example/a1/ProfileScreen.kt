@@ -6,6 +6,7 @@ import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -25,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import java.text.SimpleDateFormat
 import java.util.*
-
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProfileScreen(navController: NavHostController) {
@@ -126,15 +127,25 @@ fun ProfileScreen(navController: NavHostController) {
                 //logout button
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { navController.navigate("welcome") {
-                        popUpTo("welcome") { inclusive = true }
-                    } },
+                    onClick = {
+                        // Firebase Auth instance
+                        val auth = FirebaseAuth.getInstance()
+
+                        // Sign out the current user
+                        auth.signOut()
+
+                        // Navigate to the welcome screen
+                        navController.navigate("welcome") {
+                            popUpTo("welcome") { inclusive = true }
+                        }
+                    },
                     modifier = Modifier
-                        .width(150.dp)
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8E91B9))
+                        .height(50.dp)
+                        .width(180.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF776EE3))
                 ) {
-                    Text("Logout", color = Color.White, fontSize = (16.sp))
+                    Text("Logout", color = Color.White, fontSize = 16.sp)
                 }
             }
         }

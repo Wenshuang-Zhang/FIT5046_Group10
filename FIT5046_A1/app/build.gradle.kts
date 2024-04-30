@@ -50,6 +50,11 @@ android {
 
 dependencies {
 
+    // Also add the dependency for the Google Play services library and specify its version
+    implementation("com.google.android.gms:play-services-auth:21.1.0")
+
+    // Add the dependency for the Firebase Authentication library
+    implementation("com.google.firebase:firebase-auth")
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
 
@@ -60,6 +65,7 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.auth.ktx)
     val composeBom = platform("androidx.compose:compose-bom:2024.03.00")
     val nav_version = "2.7.7"
 
@@ -119,4 +125,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
 }

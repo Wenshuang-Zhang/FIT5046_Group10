@@ -34,22 +34,29 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+
+import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
 fun SignUpScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) } // 管理密码可见性的状态
+    var passwordVisible by remember { mutableStateOf(false) }
     var triedToSubmit by remember { mutableStateOf(false) }
+    var showLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = context as? ComponentActivity
+    val auth = FirebaseAuth.getInstance()
+
     Box(
         modifier = Modifier
         .background(
@@ -61,12 +68,13 @@ fun SignUpScreen(navController: NavHostController) {
                 )
         )
     ){
+
         //back icon
     Box(
-        contentAlignment = Alignment.TopStart, // 将内容对齐到左上角
+        contentAlignment = Alignment.TopStart,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 22.dp, start = 18.dp) // 在顶部和开始（左边）添加内边距
+            .padding(top = 22.dp, start = 18.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.back),
@@ -122,28 +130,42 @@ fun SignUpScreen(navController: NavHostController) {
             }
         )
 
-        //sign up button
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            onClick = {
-                if (isValidEmail(email) && password.length >= 8) {
-                    Toast.makeText(context, "Successfully Sign Up!", Toast.LENGTH_LONG).show()
+        Spacer(modifier = Modifier.height(24.dp))
 
-                    navController.navigate("addinfo") {
-                        popUpTo("addinfo") { inclusive = true }
-                    }
+        //sign up button
+        Button(
+            shape = RoundedCornerShape(25.dp),
+            modifier = Modifier
+                .height(50.dp)
+                .width(180.dp),
+            onClick = {
+                triedToSubmit = true
+                if (isValidEmail(email) && password.length >= 8) {
+                    showLoading = true  //loding
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(activity!!) { task ->
+                            showLoading = false
+                            if (task.isSuccessful) {
+                                Toast.makeText(context, "Successfully signed up", Toast.LENGTH_LONG).show()
+                                navController.navigate("addinfo") { //after sign up, nav to addinfo screen
+                                    popUpTo("signup") { inclusive = true }
+                                }
+                            } else {
+                                Toast.makeText(context, "Signup failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
                 } else {
                     Toast.makeText(context, "Invalid email or password", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6E14FF)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF776EE3)),
             enabled = isValidEmail(email) && password.length >= 8
         ) {
-            Text(text = "Sign up", color = Color.White)
+            Text(text = "Sign up", color = Color.White, fontSize = 16.sp)
         }
+
         Spacer(modifier = Modifier.height(24.dp))
-        //TermsAndConditionsText()
+
     }
     }
 }
