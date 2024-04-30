@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412309860019",
+    "project_id": "fit5046-group10",
+    "storage_bucket": "fit5046-group10.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412309860019:android:466f5cf15b9bffa1aa0ac6",
+        "android_client_info": {
+          "package_name": "com.example.a1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1nZHu92hw1WjuJxjK4laxVEUFuFUJk10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

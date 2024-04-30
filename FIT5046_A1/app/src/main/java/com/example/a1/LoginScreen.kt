@@ -1,4 +1,7 @@
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -19,12 +22,17 @@ import androidx.compose.material3.Button
 
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.navigation.NavHostController
+import com.example.a1.R
 import com.example.a1.SignUpScreen
+import com.example.a1.showDatePicker
+
 
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -43,6 +51,25 @@ fun LoginScreen() {
         verticalArrangement = Arrangement.Center
 
     ) {
+        //back icon
+        Box(
+            contentAlignment = Alignment.TopStart, // 将内容对齐到左上角
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 22.dp, start = 18.dp) // 在顶部和开始（左边）添加内边距
+        ) {
+            androidx.compose.material3.Icon(
+                painter = painterResource(id = R.drawable.back),
+                contentDescription = "Back Icon",
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable {
+                        navController.popBackStack()
+                    }
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,52 +102,69 @@ fun LoginScreen() {
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
+
+            //login button
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { /* TODO: Handle sign in */ },
+                onClick = {
+                    navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                } },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                shape = RoundedCornerShape(50),
+                shape = RoundedCornerShape(30),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6E14FF))
             ) {
                 Text(text = "Sign in", color = Color.White)
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-//            Row(
-//                horizontalArrangement = Arrangement.SpaceEvenly,
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.f),
-//                    contentDescription = "Facebook Login",
-//                    modifier = Modifier
-//                        .size(48.dp)
-//                        .clickable { /* Handle Facebook Login */ }
-//                )
-//                Image(
-//                    painter = painterResource(id = R.drawable.g),
-//                    contentDescription = "Google Login",
-//                    modifier = Modifier
-//                        .size(48.dp)
-//                        .clickable { /* Handle Google Login */ }
-//                )
-//            }
-            Spacer(modifier = Modifier.height(16.dp))
 
-            //sign up text
-            ClickableText(
-                text = buildAnnotatedString {
-                    append("Don't have account yet? ")
-                    withStyle(style = SpanStyle(color = Color.Blue)) {
-                        append("Sign up now")
-                    }
-                },
-                onClick = { offset ->
+            //google sign in icon
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "Or continue with")
 
+            Spacer(modifier = Modifier.height(10.dp))
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(width = 60.dp, height = 60.dp)
+                    .background(color = Color.White, shape = RoundedCornerShape(20.dp))
+                    .clickable {  }
+            ){
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    Image(
+                        painter = painterResource(id = R.drawable.g),
+                        contentDescription = "Google Login",
+                        modifier = Modifier
+                            .size(48.dp)
+                    )
                 }
-            )}
+
+            }
+
+            //jump to Sign up
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            //sign up button
+//            Text(
+//                text = "Don't have account yet? "
+//            )
+//            Spacer(modifier = Modifier.height(10.dp))
+//            Button(
+//                onClick = { navController.navigate("signup") },
+//                modifier = Modifier
+//                    .width(200.dp)
+//                    .height(48.dp),
+//                shape = RoundedCornerShape(30),
+//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF909EEA))
+//            ) {
+//                Text(text = "Sign up now", color = Color.White)
+//            }
+        }
 
     }
 }

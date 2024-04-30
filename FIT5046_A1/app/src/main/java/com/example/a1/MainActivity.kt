@@ -39,11 +39,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 class MainActivity : ComponentActivity() {
+    val db = FirebaseFirestore.getInstance()
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,20 +55,30 @@ class MainActivity : ComponentActivity() {
             A1Theme {
                 val navController = rememberNavController()
                 val mealManager = remember { MealManager() }
+
+                val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+
                 Scaffold(
-                    bottomBar = { BottomNavigationBar(navController, height = 65.dp) }
+                    bottomBar = {
+                        if (currentRoute != "login" && currentRoute != "signup" && currentRoute != "welcome" && currentRoute != "addinfo") {
+                            BottomNavigationBar(navController, height = 65.dp)
+                        }
+                    }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = "welcome",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        //nav bar
+                        composable("welcome") { WelcomeScreen(navController) }
+                        composable("login") { LoginScreen(navController) }
+                        composable("signup") { SignUpScreen(navController) }
+                        composable("addinfo") { AddInfoScreen(navController) }
+
                         composable("home") { HomeScreen(navController) }
                         composable("report") { ReportScreen(navController)}
-                        composable("activity") { LoginScreen() }
-                        composable("account") { ProfileScreen() }
-
+                        composable("activity") { }
+                        composable("profile") { ProfileScreen(navController) }
                     }
                 }
             }
@@ -170,26 +184,26 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                 modifier = Modifier
                     .padding(top = 6.dp),
                 icon = {
-                    if (currentRoute == "account") {
+                    if (currentRoute == "profile") {
                         Icon(
                             painterResource(id = R.drawable.account2), // 选中时的图标
-                            contentDescription = "Account2",
+                            contentDescription = "Profile2",
                             modifier = Modifier.size(24.dp),
                             tint = Color(0xFF1B225C)
                         )
                     } else {
                         Icon(
                             painterResource(id = R.drawable.account), // 未选中时的图标
-                            contentDescription = "Account",
+                            contentDescription = "Profile",
                             modifier = Modifier.size(24.dp),
                             tint = Color.Unspecified
                         )
                     }
                 },
-                label = { Text("Account", fontSize = 12.sp) },
-                selected = navController.currentDestination?.route == "account",
+                label = { Text("Profile", fontSize = 12.sp) },
+                selected = navController.currentDestination?.route == "profile",
                 onClick = {
-                    navController.navigate("account")
+                    navController.navigate("profile")
                 }
 
             )

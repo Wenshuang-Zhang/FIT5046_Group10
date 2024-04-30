@@ -22,12 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController: NavHostController) {
     // Prepare states for date picker and dropdowns
     val context = LocalContext.current
     var dateOfBirth by remember { mutableStateOf("11 Jan 2000") }
@@ -122,15 +123,18 @@ fun ProfileScreen() {
                     errorState = weightErrorState
                 )
 
+                //logout button
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { /* TODO: Handle logout */ },
+                    onClick = { navController.navigate("welcome") {
+                        popUpTo("welcome") { inclusive = true }
+                    } },
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .width(150.dp)
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8E91B9))
                 ) {
-                    Text("Logout", color = Color.White)
+                    Text("Logout", color = Color.White, fontSize = (16.sp))
                 }
             }
         }
