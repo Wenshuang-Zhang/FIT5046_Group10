@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 
@@ -22,7 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -79,7 +84,7 @@ fun ProfileScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top // 从顶部开始排列
+            verticalArrangement = Arrangement.Top
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -104,9 +109,9 @@ fun ProfileScreen(navController: NavHostController) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
+        //name
     Card(
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(25.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -119,33 +124,49 @@ fun ProfileScreen(navController: NavHostController) {
                 nameError = it.any { char -> !char.isLetter() } || it.length > 20
             }, error = nameError)
                 Spacer(modifier = Modifier.height(16.dp))
-
+            //date of birth
                 InformationRow(
                     label = "Date of Birth",
                     value = dateOfBirth,
                     readOnly = true,
                     onClick = {
                         showDatePicker(context) { newDate -> dateOfBirth = newDate }
-                    })
+                    },
+                    iconType = "calendar")
                 Spacer(modifier = Modifier.height(16.dp))
+//sex
+            Box(modifier = Modifier.fillMaxWidth()) {
+                InformationRow(
+                    label = "Sex",
+                    value = sex,
+                    readOnly = true,
+                    onClick = { expanded = !expanded },
+                    iconType = "dropdown"
+                )
 
-                InformationRow(label = "Sex", value = sex, readOnly = true, onClick = {
-                    expanded = true
-                })
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    sexOptions.forEach { option ->
-                        DropdownMenuItem(onClick = {
-                            sex = option
-                            expanded = false
-                        }) {
-                            Text(option)
+                // Conditionally display the DropdownMenu when 'expanded' is true
+                if (expanded) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        offset = DpOffset(x = 114.dp, y = 0.dp),
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    ) {
+                        sexOptions.forEach { label ->
+                            DropdownMenuItem(onClick = {
+                                sex = label
+                                expanded = false
+                            }) {
+                                Text(text = label)
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
 
             InformationRow("Height (cm)", height, onValueChange = {
                 height = it
@@ -159,6 +180,7 @@ fun ProfileScreen(navController: NavHostController) {
                 weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
             }, error = weightError)
 
+// save changes button
                 Button(
                     onClick = {
                         saveUserInfo(
@@ -173,6 +195,7 @@ fun ProfileScreen(navController: NavHostController) {
                             navController
                         )
                     },
+                    shape = RoundedCornerShape(25.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
@@ -182,6 +205,7 @@ fun ProfileScreen(navController: NavHostController) {
 
                 }
 
+                //logout button
                 Button(
                     onClick = {
                         // Handle logout logic
@@ -190,6 +214,7 @@ fun ProfileScreen(navController: NavHostController) {
                             popUpTo("profile") { inclusive = true } // Clear back stack up to profile screen
                         }
                     },
+                    shape = RoundedCornerShape(25.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
@@ -212,15 +237,29 @@ fun InformationRow(
     onValueChange: (String) -> Unit = {},
     readOnly: Boolean = false,
     error: Boolean = false,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    iconType: String = "calendar" // 默认为日历图标
 ) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, modifier = Modifier.weight(1f))
 
         if (readOnly) {
             if (onClick != null) {
-                Button(onClick = onClick) {
-                    Text(value)
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                    elevation = ButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
+                    modifier = Modifier.weight(2f)  // Ensures the button expands to fill space
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(value, color = Color.Black, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                        // 根据iconType选择图标
+                        Icon(
+                            imageVector = if (iconType == "calendar") Icons.Filled.CalendarToday else Icons.Filled.ArrowDropDown,
+                            contentDescription = if (iconType == "calendar") "Select Date" else "Expand",
+                            modifier = Modifier.padding(start = 4.dp) // Optional padding between text and icon
+                        )
+                    }
                 }
             } else {
                 Text(value, modifier = Modifier.weight(2f))
@@ -234,7 +273,8 @@ fun InformationRow(
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Transparent,
                     errorIndicatorColor = if (error) Color.Red else Color.Transparent
-                )
+                ),
+                modifier = Modifier.weight(2f)
             )
             if (error) {
                 Text("Invalid input", color = Color.Red, style = MaterialTheme.typography.caption)
@@ -242,6 +282,7 @@ fun InformationRow(
         }
     }
 }
+
 
 
 
