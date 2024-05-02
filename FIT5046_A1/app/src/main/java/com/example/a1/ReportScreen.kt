@@ -77,7 +77,7 @@ fun ReportScreen(navController: NavHostController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "         ACTIVE REPORT",
+                        text = "         Active Report",
                         modifier = Modifier.weight(1f),
                         color = Color(0xFF151C57),
                         fontSize = 24.sp,

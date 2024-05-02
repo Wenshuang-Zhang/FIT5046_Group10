@@ -75,158 +75,181 @@ fun ProfileScreen(navController: NavHostController) {
         }
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Brush.verticalGradient(colors = listOf(Color(0xFFE4E4FC), Color(0xFFFAE8E1))))
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(colors = listOf(Color(0xFFE4E4FC), Color(0xFFFAE8E1))))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,  // Adjust this to start from the top
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
+            //title
             Text(
-                "Fitness and Health Details",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+                "Account",
+                modifier = Modifier.weight(1f),
                 color = Color(0xFF151C57),
-                modifier = Modifier.padding(bottom = 16.dp)
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            //Spacer(modifier = Modifier.height(16.dp))
 
             // Subtitle
             Text(
                 "This information ensures Fitness and Health data are as accurate as possible",
                 fontSize = 16.sp,
                 color = Color(0xFF8E91B9),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(20.dp),
+                textAlign = TextAlign.Center
             )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-        //name
-    Card(
-            shape = RoundedCornerShape(25.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .align(Alignment.BottomCenter),
-            elevation = 2.dp
-        ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            InformationRow("Name", name, onValueChange = {
-                name = it
-                nameError = it.any { char -> !char.isLetter() } || it.length > 20
-            }, error = nameError)
-                Spacer(modifier = Modifier.height(16.dp))
-            //date of birth
-                InformationRow(
-                    label = "Date of Birth",
-                    value = dateOfBirth,
-                    readOnly = true,
-                    onClick = {
-                        showDatePicker(context) { newDate -> dateOfBirth = newDate }
-                    },
-                    iconType = "calendar")
-                Spacer(modifier = Modifier.height(16.dp))
-//sex
-            Box(modifier = Modifier.fillMaxWidth()) {
-                InformationRow(
-                    label = "Sex",
-                    value = sex,
-                    readOnly = true,
-                    onClick = { expanded = !expanded },
-                    iconType = "dropdown"
-                )
+            Spacer(modifier = Modifier.height(6.dp))
 
-                // Conditionally display the DropdownMenu when 'expanded' is true
-                if (expanded) {
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        offset = DpOffset(x = 114.dp, y = 0.dp),
-                        modifier = Modifier.align(Alignment.BottomStart)
-                    ) {
-                        sexOptions.forEach { label ->
-                            DropdownMenuItem(onClick = {
-                                sex = label
-                                expanded = false
-                            }) {
-                                Text(text = label)
+            Card(
+                shape = RoundedCornerShape(25.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 0.dp, bottom = 25.dp, start = 12.dp, end = 12.dp),
+                elevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp, bottom = 10.dp, start = 24.dp, end = 24.dp)
+                ) {
+                    InformationRow("Name", name, onValueChange = {
+                        name = it
+                        nameError = it.any { char -> !char.isLetter() } || it.length > 20
+                    }, error = nameError)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    //date of birth
+                    InformationRow(
+                        label = "Date of Birth",
+                        value = dateOfBirth,
+                        readOnly = true,
+                        onClick = {
+                            showDatePicker(context) { newDate -> dateOfBirth = newDate }
+                        },
+                        iconType = "calendar"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    //sex
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        InformationRow(
+                            label = "Sex",
+                            value = sex,
+                            readOnly = true,
+                            onClick = { expanded = !expanded },
+                            iconType = "dropdown"
+                        )
+
+                        // Conditionally display the DropdownMenu when 'expanded' is true
+                        if (expanded) {
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                offset = DpOffset(x = 114.dp, y = 0.dp),
+                                modifier = Modifier.align(Alignment.BottomStart)
+                            ) {
+                                sexOptions.forEach { label ->
+                                    DropdownMenuItem(onClick = {
+                                        sex = label
+                                        expanded = false
+                                    }) {
+                                        Text(text = label)
+                                    }
+                                }
                             }
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+
+
+                    InformationRow("Height (cm)", height, onValueChange = {
+                        height = it
+                        heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
+                    }, error = heightError)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    InformationRow("Weight (kg)", weight, onValueChange = {
+                        weight = it
+                        weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
+                    }, error = weightError)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Column(
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp)
+                    ) {
+                        // save changes button
+                        Button(
+                            onClick = {
+                                saveUserInfo(
+                                    db,
+                                    uid,
+                                    name,
+                                    dateOfBirth,
+                                    sex,
+                                    height,
+                                    weight,
+                                    context
+                                )
+                            },
+                            shape = RoundedCornerShape(25.dp),
+                            modifier = Modifier
+                                .height(50.dp)
+                                .width(180.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3)),
+                        ) {
+                            Text("Save Changes", color = Color.White, fontSize = 16.sp)
+
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        //logout button
+                        Button(
+                            onClick = {
+                                // Handle logout logic
+                                auth.signOut()
+                                navController.navigate("login") {
+                                    popUpTo("profile") {
+                                        inclusive = true
+                                    } // Clear back stack up to profile screen
+                                }
+                            },
+                            shape = RoundedCornerShape(25.dp),
+                            modifier = Modifier
+                                .height(50.dp)
+                                .width(180.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3))
+                        ) {
+                            Text("Log out", color = Color.White, fontSize = 16.sp)
+                        }
+
+
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-
-            InformationRow("Height (cm)", height, onValueChange = {
-                height = it
-                heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
-            }, error = heightError)
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-            InformationRow("Weight (kg)", weight, onValueChange = {
-                weight = it
-                weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
-            }, error = weightError)
-
-// save changes button
-                Button(
-                    onClick = {
-                        saveUserInfo(
-                            db,
-                            uid,
-                            name,
-                            dateOfBirth,
-                            sex,
-                            height,
-                            weight,
-                            context,
-                            navController
-                        )
-                    },
-                    shape = RoundedCornerShape(25.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3)),
-                ) {
-                    Text("Save Changes", color = Color.White, fontSize = 16.sp)
-
-                }
-
-                //logout button
-                Button(
-                    onClick = {
-                        // Handle logout logic
-                        auth.signOut()
-                        navController.navigate("login") {
-                            popUpTo("profile") { inclusive = true } // Clear back stack up to profile screen
-                        }
-                    },
-                    shape = RoundedCornerShape(25.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3))
-                ) {
-                    Text("Log out", color = Color.White, fontSize = 16.sp)
-                }
-
-
-
-            }
         }
+
+        //name
+
     }
 }
 
@@ -285,25 +308,36 @@ fun InformationRow(
 
 
 
-
-
-fun saveUserInfo(db: FirebaseFirestore, uid: String?, name: String, dateOfBirth: String, sex: String, height: String, weight: String, context: Context, navController: NavHostController) {
+fun saveUserInfo(db: FirebaseFirestore, uid: String?, name: String, dateOfBirth: String, sex: String, height: String, weight: String, context: Context) {
     if (uid != null) {
+        val heightInCm = height.toDoubleOrNull() ?: 0.0
+        val weightInKg = weight.toDoubleOrNull() ?: 0.0
+
+        //calculate calorie goal
+        val calorieGoal = if (sex == "Male") {
+            ((88.362 + (13.397 * weightInKg) + (4.799 * heightInCm) - (5.677 * 25) + 300).toInt())
+        } else {
+            ((447.593 + (9.247 * weightInKg) + (3.098 * heightInCm) - (4.330 * 25) + 300).toInt())
+        }
+        val calorieGoalStr = calorieGoal.toString()
+
         val userInfo = hashMapOf(
             "name" to name,
             "dateOfBirth" to dateOfBirth,
             "sex" to sex,
             "height" to height,
-            "weight" to weight
+            "weight" to weight,
+            "calorieGoal" to calorieGoalStr,
         )
         db.collection("usersInfo").document(uid).set(userInfo)
             .addOnSuccessListener {
                 Toast.makeText(context, "Information saved successfully", Toast.LENGTH_SHORT).show()
-                navController.navigate("home") { popUpTo("home") { inclusive = true } }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(context, "Failed to save information: ${e.message}", Toast.LENGTH_LONG).show()
             }
+    }else {
+        Toast.makeText(context, "User ID is null, cannot save information.", Toast.LENGTH_LONG).show()
     }
 }
 
