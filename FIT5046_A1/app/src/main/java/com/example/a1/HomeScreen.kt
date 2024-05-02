@@ -1,5 +1,7 @@
 package com.example.a1
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,6 +34,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -43,10 +50,74 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.PathEffect
-
+import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import retrofit2.Call
+import retrofit2.http.GET
+import retrofit2.http.Query
+import retrofit2.Response
+import retrofit2.Callback
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import androidx.compose.material.LinearProgressIndicator
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    val db = FirebaseFirestore.getInstance()
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val context = LocalContext.current
+
+    //get health data
+    var steps by remember { mutableStateOf("Loading...") }
+    var sleepHours by remember { mutableStateOf("Loading...") }
+    var userName by remember { mutableStateOf("Loading...") }
+
+
+
+    //get user health data
+    LaunchedEffect(user?.uid) {
+        user?.uid?.let { uid ->
+            db.collection("healthInfo").document(uid).get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // Assuming 'steps' and 'sleepHours' are stored as Long or similar numeric data
+                    val stepsValue = document.getLong("steps") ?: 0L  // Get as Long, default to 0 if null
+                    val sleepHoursValue = document.getLong("sleepHours") ?: 0L  // Get as Long, default to 0 if null
+
+                    // Convert numeric values to string for display purposes
+                    steps = stepsValue.toString()
+                    sleepHours = sleepHoursValue.toString()
+                } else {
+                    steps = "0"
+                    sleepHours = "0"
+                }
+            }.addOnFailureListener { e ->
+                // Log error or handle failure to fetch data
+                Log.e("Firestore", "Error fetching document: ${e.message}")
+                steps = "Error loading data"
+                sleepHours = "Error loading data"
+            }
+        }
+    }
+
+    //get user name
+    LaunchedEffect(uid) {
+        uid?.let {
+            db.collection("usersInfo").document(it).get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    userName = document.getString("name") ?: "User"  // Default to "User" if null
+                } else {
+                    userName = "User"
+                }
+            }.addOnFailureListener {
+                userName = "Error"
+            }
+        }
+    }
+
+    //page
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -59,8 +130,8 @@ fun HomeScreen(navController: NavHostController) {
                 )
             )
     ) {
-        item {
 
+        item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,7 +152,7 @@ fun HomeScreen(navController: NavHostController) {
                         .padding(start = 180.dp)
                 ) {
                     Text(
-                        text = "Hi, Bella",
+                        text = "Hi, $userName",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF151C57),
@@ -92,24 +163,13 @@ fun HomeScreen(navController: NavHostController) {
 
             }
         }
+
         item {
             CircularProgress(progress = 0.8f)
         }
-//        item {
-//            Text(
-//                text = "85%",
-//                color = Color(0xFF151C57),
-//                fontSize = 50.sp,
-//                textAlign = TextAlign.Center,
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//            )
-//        }
         item {
-            // 提示信息
             Text(
-                text = "Cheer up, Bella! You have reach 80% CALORIES GOAL today, Keep moving!",
+                text = "Cheer up, $userName! You have reach 80% CALORIES GOAL today, Keep moving!",
                 color = Color(0xFF8E91B9),
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
@@ -118,11 +178,12 @@ fun HomeScreen(navController: NavHostController) {
                     .padding(vertical = 8.dp, horizontal = 40.dp)
             )
         }
-        item { WeatherCard() }
-        item { StepCard(navController = navController)} // step card
+
+        //cards
+        item { WeatherCard(context) }
+        item { StepCard(steps)} // step card
         item { CalorieCard() } // calorie card
-        item { SleepCard() } // sleep card
-        item { HeartRateCard() } //
+        item { SleepCard(sleepHours) } // sleep card
     }
 }
 
@@ -180,8 +241,194 @@ fun CircularProgress(progress: Float, modifier: Modifier = Modifier) {
     }
 }
 
+
 @Composable
-fun WeatherCard() {
+fun StepCard(steps: String) {
+    val goalSteps = 18000
+    // Convert safely, provide a fallback value if conversion fails
+    val stepCount = steps.toIntOrNull() ?: 0
+    val progress = stepCount.toFloat() / goalSteps.toFloat()
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .heightIn(min = 100.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.steps),
+                    contentDescription = "Step Icon",
+                    modifier = Modifier
+                        .size(55.dp)
+                        .padding(end = 16.dp)
+                )
+
+                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    Text(
+                        text = "Steps",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF151C57),
+                        fontSize = 18.sp
+                    )
+                    Text(
+                        text = "$stepCount steps          Goal: $goalSteps steps",
+                        color = Color(0xFF8E91B9),
+                        fontSize = 14.sp
+                    )
+                }
+            }
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier
+                    .width(350.dp)
+                    .height(30.dp)
+                    .padding(top = 10.dp, bottom = 10.dp, start = 30.dp, end = 24.dp)
+                    .clip(RoundedCornerShape(15.dp)),
+                backgroundColor = Color.LightGray,
+                color = Color(0xFF80BDFD),
+            )
+        }
+    }
+}
+
+
+@Composable
+fun CalorieCard() {
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .clickable { /*  */ }
+            .heightIn(min = 100.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.workout),
+                    contentDescription = "Calories Icon",
+                    modifier = Modifier
+                        .size(55.dp)
+                        .padding(end = 16.dp)
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    Text(
+                        text = "Calories",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF151C57),
+                        fontSize = 18.sp
+                    )
+                    Text(
+                        text = "290 kcal          Goal: 1500 kcal",
+                        color = Color(0xFF8E91B9),
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SleepCard(sleepHours: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .heightIn(min = 100.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.sleep),
+                    contentDescription = "Sleep Icon",
+                    modifier = Modifier
+                        .size(55.dp)
+                        .padding(end = 16.dp)
+                )
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Sleep",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF151C57),
+                        fontSize = 18.sp)
+
+                    Text(
+                        text = "$sleepHours Hours",
+                        color = Color(0xFF8E91B9),
+                        fontSize = 14.sp)
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun WeatherCard(context: Context) {
+    var weatherInfo by remember { mutableStateOf("Loading weather data...") }
+
+    LaunchedEffect(Unit) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.openweathermap.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(WeatherService::class.java)
+        val weatherCall = service.getCurrentWeather("London", "metric", "99310d74bca4fb0e17d121e4150acbf0")
+
+        weatherCall.enqueue(object : Callback<WeatherResponse> {
+            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        weatherInfo = "Temperature ${it.main.temp}°C, ${it.weather.first().description},\nLowest: ${it.main.temp_min}°C Highest: ${it.main.temp_max}°C"
+                    }
+                } else {
+                    weatherInfo = "Failed to retrieve weather"
+                }
+            }
+            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                weatherInfo = "Error: ${t.message}"
+            }
+        })
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,9 +436,7 @@ fun WeatherCard() {
             .heightIn(min = 50.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -200,7 +445,7 @@ fun WeatherCard() {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Temperature 18, mostly sunny, L: 14 H: 21",
+                text = weatherInfo,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF151C57),
                 textAlign = TextAlign.Center
@@ -209,104 +454,29 @@ fun WeatherCard() {
     }
 }
 
-@Composable
-fun StepCard(navController: NavHostController) {
-    //
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clickable { /* */ }
-            .heightIn(min = 100.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Text("Steps", fontWeight = FontWeight.Bold, color = Color(0xFF151C57))
-            Text("4320 steps, Goal: 8000 steps", color = Color(0xFF8E91B9))
-            //
-        }
-    }
+// API Interface
+interface WeatherService {
+    @GET("data/2.5/weather")
+    fun getCurrentWeather(
+        @Query("q") city: String,
+        @Query("units") units: String,
+        @Query("appid") apiKey: String
+    ): Call<WeatherResponse>
 }
 
-@Composable
-fun CalorieCard() {
-    //
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clickable { /*  */ }
-            .heightIn(min = 100.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Text("Calories", fontWeight = FontWeight.Bold, color = Color(0xFF151C57))
-            Text("290 kcal", color = Color(0xFF8E91B9))
-            //
-        }
-    }
-}
-
-@Composable
-fun SleepCard(
-    cardBackgroundColor: Color = Color.White,
+// Data Classes
+data class WeatherResponse(
+    val main: Main,
+    val weather: List<Weather>
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .heightIn(min = 100.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
+    data class Main(
+        val temp: Double,
+        val temp_min: Double,
+        val temp_max: Double
+    )
 
-        ) {
-            Text("Sleep", fontWeight = FontWeight.Bold, color = Color(0xFF151C57))
-            Text("6.5 Hours", color = Color(0xFF8E91B9))
-            //
-        }
-    }
+    data class Weather(
+        val description: String
+    )
 }
-
-@Composable
-fun HeartRateCard() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clickable { /*  */ }
-            .heightIn(min = 100.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Text("Heart Rate", fontWeight = FontWeight.Bold, color = Color(0xFF151C57))
-            Text("75 bpm, 3h ago", color = Color(0xFF8E91B9))
-            // UI
-        }
-    }
-}
-
 

@@ -31,7 +31,8 @@ import com.example.a1.SignUpScreen
 import com.example.a1.showDatePicker
 
 import com.google.firebase.auth.FirebaseAuth
-
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlin.random.Random
 
 
 @Composable
@@ -122,9 +123,38 @@ fun LoginScreen(navController: NavHostController) {
             //sign in button
             Button(
                 onClick = {
-                    auth.signInWithEmailAndPassword(email, password)
+                    val auth1 = FirebaseAuth.getInstance()
+                    auth1.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
+                                val userId = auth.currentUser?.uid
+                                if (userId != null) {
+                                    val db = FirebaseFirestore.getInstance()
+                                    val docRef = db.collection("healthInfo").document(userId)
+                                    docRef.get().addOnSuccessListener { document ->
+                                        if (!document.exists()) {
+                                            // Generate random sleep hours and steps
+                                            val sleepHours = Random.nextInt(6, 11)  // Random number between 6 and 10
+                                            val steps = Random.nextInt(2200, 11001) // Random number between 2200 and 11000
+
+                                            // Create a new health info record
+                                            val healthInfo = hashMapOf(
+                                                "sleepHours" to sleepHours,
+                                                "steps" to steps
+                                            )
+
+                                            // Set the new data in Firestore
+                                            docRef.set(healthInfo).addOnSuccessListener {
+                                                // Successfully created health info
+                                            }.addOnFailureListener {
+                                                // Handle failure
+                                            }
+                                        }
+                                    }.addOnFailureListener {
+                                        // Handle failure to get document
+                                    }
+                                }
+
                                 navController.navigate("home") {
                                     popUpTo("login") { inclusive = true }
                                 }
@@ -141,7 +171,6 @@ fun LoginScreen(navController: NavHostController) {
             ) {
                 Text(text = "Sign in", color = Color.White, fontSize = 16.sp)
             }
-
 
 //            //login button
 //            Spacer(modifier = Modifier.height(26.dp))
