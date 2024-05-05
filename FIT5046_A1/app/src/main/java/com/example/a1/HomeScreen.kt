@@ -61,6 +61,8 @@ import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import androidx.compose.material.LinearProgressIndicator
+import java.time.LocalDate
+import kotlin.math.min
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
@@ -74,7 +76,15 @@ fun HomeScreen(navController: NavHostController) {
     var steps by remember { mutableStateOf("Loading...") }
     var sleepHours by remember { mutableStateOf("Loading...") }
     var userName by remember { mutableStateOf("Loading...") }
+    var percentage by remember { mutableStateOf(0.0f) }
 
+    LaunchedEffect(uid) {
+        if (uid != null) {
+            fetchCalorieData(uid) { calculatedPercentage ->
+                percentage = calculatedPercentage
+            }
+        }
+    }
 
 
     //get user health data
@@ -164,12 +174,17 @@ fun HomeScreen(navController: NavHostController) {
             }
         }
 
+
+
         item {
-            CircularProgress(progress = 0.8f)
+            if (uid != null) {
+                CircularProgress(progress = percentage)
+            }
         }
+
         item {
             Text(
-                text = "Cheer up, $userName! You have reach 80% CALORIES GOAL today, Keep moving!",
+                text = "Cheer up, $userName! You have reach ${(percentage * 100).toInt()}% CALORIES GOAL today, Keep moving!",
                 color = Color(0xFF8E91B9),
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
@@ -180,12 +195,17 @@ fun HomeScreen(navController: NavHostController) {
         }
 
         //cards
-        item { WeatherCard(context) }
-        item { StepCard(steps)} // step card
-        item { CalorieCard() } // calorie card
+        item(key = "weather") { WeatherCard(context) }
+        item(key = "steps") { StepCard(steps) }
+        item(key = "calorie") {
+            if (uid != null) {
+                calorieCard(uid)
+            }
+        }// calorie card
         item { SleepCard(sleepHours) } // sleep card
     }
 }
+
 
 @Composable
 fun CircularProgress(progress: Float, modifier: Modifier = Modifier) {
@@ -196,18 +216,16 @@ fun CircularProgress(progress: Float, modifier: Modifier = Modifier) {
             .padding(16.dp)
             .height(IntrinsicSize.Min)
     ) {
-
         Canvas(modifier = Modifier
-            .size(180.dp) //
+            .size(180.dp)
             .align(Alignment.Center)
         ) {
-
             val strokeWidth = 40f
             val radius = size.minDimension / 2 - strokeWidth / 2
             val topLeftOffset = Offset(strokeWidth / 2, strokeWidth / 2)
             val arcSize = Size(radius * 2, radius * 2)
             val progressAngle = 360 * progress
-            // Draw the background circle
+            // Background circle
             drawArc(
                 color = Color(0xFFE2DFEB),
                 startAngle = 0f,
@@ -217,8 +235,7 @@ fun CircularProgress(progress: Float, modifier: Modifier = Modifier) {
                 size = arcSize,
                 style = Stroke(width = strokeWidth, pathEffect = PathEffect.cornerPathEffect(radius))
             )
-
-            // Draw the progress circle
+            // Progress circle
             drawArc(
                 color = Color(0xFFAB93EF),
                 startAngle = -90f,
@@ -229,8 +246,7 @@ fun CircularProgress(progress: Float, modifier: Modifier = Modifier) {
                 style = Stroke(width = strokeWidth, pathEffect = PathEffect.cornerPathEffect(radius))
             )
         }
-
-        // Draw the progress text
+        // Progress text
         Text(
             text = "${(progress * 100).toInt()}%",
             color = Color(0xFF151C57),
@@ -240,7 +256,6 @@ fun CircularProgress(progress: Float, modifier: Modifier = Modifier) {
         )
     }
 }
-
 
 @Composable
 fun StepCard(steps: String) {
@@ -302,55 +317,192 @@ fun StepCard(steps: String) {
 }
 
 
-@Composable
-fun CalorieCard() {
+fun fetchCalorieData(userId: String, onComplete: (Float) -> Unit) {
+    val db = FirebaseFirestore.getInstance()
+    val today = LocalDate.now().toString()
+    var totalKcal = 0
+    var calorieGoal = 1  // 初始化为1以避免除零错误
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clickable { /*  */ }
-            .heightIn(min = 100.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
-    ) {
-        Column(
+    // 先获取目标卡路里
+    db.collection("usersInfo").document(userId)
+        .get()
+        .addOnSuccessListener { document ->
+            calorieGoal = document.getString("calorieGoal")?.toIntOrNull() ?: 1
+            // 接着获取卡片信息
+            db.collection("trainingHistory").document(userId).collection("cards")
+                .whereEqualTo("trainingDate", today)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    totalKcal = querySnapshot.documents.sumOf { doc ->
+                        doc.getLong("kcal")?.toInt() ?: 0
+                    }
+                    val percentage = (totalKcal.toFloat() / calorieGoal.toFloat()).coerceIn(0f, 1f)
+                    onComplete(percentage)
+                }
+                .addOnFailureListener { e ->
+                    println("Error fetching training cards: ${e.message}")
+                }
+        }
+        .addOnFailureListener { e ->
+            println("Error fetching user info: ${e.message}")
+        }
+}
+//fun fetchCalorieData(userId: String, onComplete: (Float) -> Unit) {
+//    val db = FirebaseFirestore.getInstance()
+//    var totalKcal = 0
+//    var calorieGoal = 1
+//    val today = LocalDate.now().toString()
+//
+//    db.collection("usersInfo").document(userId)
+//        .get()
+//        .addOnSuccessListener { document ->
+//            calorieGoal = document.getString("calorieGoal")?.toIntOrNull() ?: 1
+//            db.collection("trainingHistory").document(userId).collection("card")
+//                .whereEqualTo("trainingDate", today)
+//                .get()
+//                .addOnSuccessListener { documents ->
+//                    totalKcal = documents.sumOf { doc -> doc.getLong("kcal")?.toInt() ?: 0 }
+//                    val percentage = (totalKcal.toFloat() / calorieGoal.toFloat()).coerceIn(0f, 1f)
+//                    onComplete(percentage)  // 回调函数传递计算结果
+//                }
+//        }
+//}
+
+@Composable
+fun calorieCard(userId: String): Float {
+    val db = FirebaseFirestore.getInstance()
+    var totalKcal by remember { mutableStateOf(0) }
+    var calorieGoal by remember { mutableStateOf(1) }  // 初始化为1以避免除零错误
+    var percentage by remember { mutableStateOf(0.0f) }
+
+    val today = LocalDate.now().toString()
+
+    LaunchedEffect(key1 = userId) {
+        // 获取用户的目标卡路里
+        db.collection("usersInfo").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                calorieGoal = document.getString("calorieGoal")?.toIntOrNull() ?: 1
+            }
+
+        // 获取用户当天消耗的卡路里总和
+        db.collection("trainingHistory").document(userId).collection("card")
+            .whereEqualTo("trainingDate", today)
+            .get()
+            .addOnSuccessListener { documents ->
+                totalKcal = documents.sumOf { doc -> doc.getLong("kcal")?.toInt() ?: 0 }
+                percentage = (totalKcal.toFloat() / calorieGoal.toFloat()).coerceIn(0f, 1f)
+            }
+    }
+
+    //loading the card
+    if (totalKcal != null && calorieGoal != null) {
+        // show
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
+                .padding(12.dp)
+                .clickable { /* Handle Click */ }
+                .heightIn(min = 100.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.workout),
-                    contentDescription = "Calories Icon",
-                    modifier = Modifier
-                        .size(55.dp)
-                        .padding(end = 16.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.workout),
+                        contentDescription = "Calories Icon",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .padding(end = 16.dp)
+                    )
 
-                Column(
-                    modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    Text(
-                        text = "Calories",
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF151C57),
-                        fontSize = 18.sp
-                    )
-                    Text(
-                        text = "290 kcal          Goal: 1500 kcal",
-                        color = Color(0xFF8E91B9),
-                        fontSize = 14.sp
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f).fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "Calories",
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF151C57),
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            text = "$totalKcal kcal - Goal: $calorieGoal kcal",
+                            color = Color(0xFF8E91B9),
+                            fontSize = 14.sp
+                        )
+                    }
                 }
             }
         }
+    } else {
+        // loading
+        Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+        }
     }
+
+    return percentage
 }
+
+
+
+//
+//@Composable
+//fun CalorieCard() {
+//
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(12.dp)
+//            .clickable { /*  */ }
+//            .heightIn(min = 100.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+//        shape = RoundedCornerShape(15.dp),
+//        colors = CardDefaults.cardColors(
+//            containerColor = Color.White
+//        )
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
+//        ) {
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//            ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.workout),
+//                    contentDescription = "Calories Icon",
+//                    modifier = Modifier
+//                        .size(55.dp)
+//                        .padding(end = 16.dp)
+//                )
+//
+//                Column(
+//                    modifier = Modifier.weight(1f).fillMaxHeight()) {
+//                    Text(
+//                        text = "Calories",
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color(0xFF151C57),
+//                        fontSize = 18.sp
+//                    )
+//                    Text(
+//                        text = "290 kcal          Goal: 1500 kcal",
+//                        color = Color(0xFF8E91B9),
+//                        fontSize = 14.sp
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun SleepCard(sleepHours: String) {

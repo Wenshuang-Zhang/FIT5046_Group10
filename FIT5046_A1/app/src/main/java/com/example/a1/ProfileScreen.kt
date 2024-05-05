@@ -276,7 +276,7 @@ fun InformationRow(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(value, color = Color.Black, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                        // 根据iconType选择图标
+
                         Icon(
                             imageVector = if (iconType == "calendar") Icons.Filled.CalendarToday else Icons.Filled.ArrowDropDown,
                             contentDescription = if (iconType == "calendar") "Select Date" else "Expand",

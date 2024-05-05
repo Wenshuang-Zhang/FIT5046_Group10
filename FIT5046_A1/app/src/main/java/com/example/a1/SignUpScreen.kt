@@ -139,6 +139,7 @@ fun SignUpScreen(navController: NavHostController) {
                 .height(50.dp)
                 .width(180.dp),
             onClick = {
+
                 triedToSubmit = true
                 if (isValidEmail(email) && password.length >= 8) {
                     showLoading = true  //loding

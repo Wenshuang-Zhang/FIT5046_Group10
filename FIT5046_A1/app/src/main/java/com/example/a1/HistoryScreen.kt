@@ -55,10 +55,13 @@ import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
@@ -126,12 +129,20 @@ fun HistoryScreen(navController: NavHostController) {
                 )
         ) {
             Text(
-                text = "History",
+                text = "Activity",
                 color = Color(0xFF151C57),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 0.dp)
+            )
+
+            Text(
+                "Press the bottom icon to record your work out",
+                fontSize = 16.sp,
+                color = Color(0xFF8E91B9),
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 0.dp)
             )
 
             LazyColumn(contentPadding = PaddingValues(all = 16.dp)) {
@@ -146,12 +157,12 @@ fun HistoryScreen(navController: NavHostController) {
                         Text(text = month, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Gray)
                     }
                     items(itemsInMonth) { item ->
-                        HistoryCard(item) //需要修改传入的参数
+                        HistoryCard(item)
                     }
                 }
             }
         }
-        // 添加 FloatingActionButton
+        //FloatingActionButton
         FloatingActionButton(
             onClick = { showDialog = true },
             modifier = Modifier
@@ -241,9 +252,22 @@ fun AddDialog(historyItems: SnapshotStateList<HistoryItem>, onDismiss: () -> Uni
 
                 OutlinedTextField(
                     value = time,
-                    onValueChange = { time = it },
-                    label = { Text("Training Time") },
-                    modifier = Modifier.fillMaxWidth()
+                    onValueChange = { newValue ->
+                        // convert the input to int
+                        val num = newValue.toIntOrNull()
+                        if (num != null && num in 0..1000) {
+                            time = newValue
+                        }
+                        if (newValue.isEmpty()) {
+                            time = ""
+                        }
+                    },
+                    label = { Text("Training Time (Minutes)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    //number keyboard
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -282,7 +306,7 @@ fun uploadToFirebase(newItem: HistoryItem) {
     val data = hashMapOf(
         "type" to newItem.type,
         "kcal" to newItem.kcal,
-        "trainingDate" to newItem.trainingDate,  // 假设这是格式化的日期字符串
+        "trainingDate" to newItem.trainingDate,
         "trainingTime" to newItem.trainingTime
     )
     if (uid != null) {
@@ -324,6 +348,7 @@ fun DatePickerDialog(
     }
 }
 
+
 fun calculateKcal(trainingType: String, trainingTime: Int): Int {
     return when (trainingType) {
         "CYCLING" -> 12 * trainingTime
@@ -331,7 +356,7 @@ fun calculateKcal(trainingType: String, trainingTime: Int): Int {
         "YOGA" -> 3 * trainingTime
         "TREADMILL" -> 10 * trainingTime
         "PILATES" -> 6 * trainingTime
-        else -> 0 // 如果输入的训练类型不匹配任何已知类型，则返回0
+        else -> 0 //0
     }
 }
 

@@ -259,6 +259,16 @@ fun AddInfoScreen(navController: NavHostController) {
                     height.toIntOrNull() in 1..400 && weight.toIntOrNull() in 1..400) {
                     showError = false
 
+                    //calculate calorie goal
+                    val heightInCm = height.toDoubleOrNull() ?: 0.0
+                    val weightInKg = weight.toDoubleOrNull() ?: 0.0
+                    val calorieGoal = if (sex == "Male") {
+                        ((88.362 + (13.397 * weightInKg) + (4.799 * heightInCm) - (5.677 * 25) + 300).toInt())
+                    } else {
+                        ((447.593 + (9.247 * weightInKg) + (3.098 * heightInCm) - (4.330 * 25) + 300).toInt())
+                    }
+                    val calorieGoalStr = calorieGoal.toString()
+
                     // Firestore instance
                     val db = FirebaseFirestore.getInstance()
                     val userInfo = hashMapOf(
@@ -266,7 +276,8 @@ fun AddInfoScreen(navController: NavHostController) {
                         "dateOfBirth" to dateOfBirth,
                         "sex" to sex,
                         "height" to height,
-                        "weight" to weight
+                        "weight" to weight,
+                        "calorieGoal" to calorieGoalStr,
                     )
                     if (uid != null) {
                         db.collection("usersInfo").document(uid).set(userInfo)
