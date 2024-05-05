@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 
                         composable("home") { HomeScreen(navController) }
                         composable("report") { ReportScreen(navController)}
-                        composable("activity") { }
+                        composable("activity") { HistoryScreen(navController)}
                         composable("profile") { ProfileScreen(navController) }
                     }
                 }
