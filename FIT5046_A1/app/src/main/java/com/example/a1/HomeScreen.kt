@@ -316,19 +316,19 @@ fun StepCard(steps: String) {
     }
 }
 
-
+//for calculate the percentage of workout for CircularProgress
 fun fetchCalorieData(userId: String, onComplete: (Float) -> Unit) {
     val db = FirebaseFirestore.getInstance()
     val today = LocalDate.now().toString()
     var totalKcal = 0
-    var calorieGoal = 1  // 初始化为1以避免除零错误
+    var calorieGoal = 1  //
 
-    // 先获取目标卡路里
+    // get goal calorie
     db.collection("usersInfo").document(userId)
         .get()
         .addOnSuccessListener { document ->
             calorieGoal = document.getString("calorieGoal")?.toIntOrNull() ?: 1
-            // 接着获取卡片信息
+            // get the total calories for today from trainingHistory form
             db.collection("trainingHistory").document(userId).collection("cards")
                 .whereEqualTo("trainingDate", today)
                 .get()
@@ -347,50 +347,31 @@ fun fetchCalorieData(userId: String, onComplete: (Float) -> Unit) {
             println("Error fetching user info: ${e.message}")
         }
 }
-//fun fetchCalorieData(userId: String, onComplete: (Float) -> Unit) {
-//    val db = FirebaseFirestore.getInstance()
-//    var totalKcal = 0
-//    var calorieGoal = 1
-//    val today = LocalDate.now().toString()
-//
-//    db.collection("usersInfo").document(userId)
-//        .get()
-//        .addOnSuccessListener { document ->
-//            calorieGoal = document.getString("calorieGoal")?.toIntOrNull() ?: 1
-//            db.collection("trainingHistory").document(userId).collection("card")
-//                .whereEqualTo("trainingDate", today)
-//                .get()
-//                .addOnSuccessListener { documents ->
-//                    totalKcal = documents.sumOf { doc -> doc.getLong("kcal")?.toInt() ?: 0 }
-//                    val percentage = (totalKcal.toFloat() / calorieGoal.toFloat()).coerceIn(0f, 1f)
-//                    onComplete(percentage)  // 回调函数传递计算结果
-//                }
-//        }
-//}
+
 
 @Composable
-fun calorieCard(userId: String): Float {
+fun calorieCard(userId: String) {
     val db = FirebaseFirestore.getInstance()
     var totalKcal by remember { mutableStateOf(0) }
-    var calorieGoal by remember { mutableStateOf(1) }  // 初始化为1以避免除零错误
+    var calorieGoal by remember { mutableStateOf(1) }
     var percentage by remember { mutableStateOf(0.0f) }
 
     val today = LocalDate.now().toString()
 
     LaunchedEffect(key1 = userId) {
-        // 获取用户的目标卡路里
+        // get goal calorie
         db.collection("usersInfo").document(userId)
             .get()
             .addOnSuccessListener { document ->
                 calorieGoal = document.getString("calorieGoal")?.toIntOrNull() ?: 1
             }
 
-        // 获取用户当天消耗的卡路里总和
-        db.collection("trainingHistory").document(userId).collection("card")
+        // get the total calories for today from trainingHistory form
+        db.collection("trainingHistory").document(userId).collection("cards")
             .whereEqualTo("trainingDate", today)
             .get()
-            .addOnSuccessListener { documents ->
-                totalKcal = documents.sumOf { doc -> doc.getLong("kcal")?.toInt() ?: 0 }
+            .addOnSuccessListener { querySnapshot ->
+                totalKcal = querySnapshot.documents.sumOf { doc -> doc.getLong("kcal")?.toInt() ?: 0 }
                 percentage = (totalKcal.toFloat() / calorieGoal.toFloat()).coerceIn(0f, 1f)
             }
     }
@@ -434,7 +415,7 @@ fun calorieCard(userId: String): Float {
                             fontSize = 18.sp
                         )
                         Text(
-                            text = "$totalKcal kcal - Goal: $calorieGoal kcal",
+                            text = "$totalKcal kcal          Goal: $calorieGoal kcal",
                             color = Color(0xFF8E91B9),
                             fontSize = 14.sp
                         )
@@ -448,61 +429,9 @@ fun calorieCard(userId: String): Float {
         }
     }
 
-    return percentage
 }
 
 
-
-//
-//@Composable
-//fun CalorieCard() {
-//
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(12.dp)
-//            .clickable { /*  */ }
-//            .heightIn(min = 100.dp),
-//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-//        shape = RoundedCornerShape(15.dp),
-//        colors = CardDefaults.cardColors(
-//            containerColor = Color.White
-//        )
-//    ) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(top = 14.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
-//        ) {
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//            ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.workout),
-//                    contentDescription = "Calories Icon",
-//                    modifier = Modifier
-//                        .size(55.dp)
-//                        .padding(end = 16.dp)
-//                )
-//
-//                Column(
-//                    modifier = Modifier.weight(1f).fillMaxHeight()) {
-//                    Text(
-//                        text = "Calories",
-//                        fontWeight = FontWeight.Bold,
-//                        color = Color(0xFF151C57),
-//                        fontSize = 18.sp
-//                    )
-//                    Text(
-//                        text = "290 kcal          Goal: 1500 kcal",
-//                        color = Color(0xFF8E91B9),
-//                        fontSize = 14.sp
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun SleepCard(sleepHours: String) {
