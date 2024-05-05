@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 
                         composable("home") { HomeScreen(navController) }
                         composable("report") { ReportScreen(navController)}
-                        composable("history") { HistoryScreen(navController)}
+                        composable("activity") { HistoryScreen(navController)}
                         composable("profile") { ProfileScreen(navController) }
                     }
                 }
@@ -173,10 +173,10 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                         )
                     }
                 },
-                label = { Text("History", fontSize = 12.sp) },
-                selected = navController.currentDestination?.route == "history",
+                label = { Text("Activity", fontSize = 12.sp) },
+                selected = navController.currentDestination?.route == "activity",
                 onClick = {
-                    navController.navigate("history")
+                    navController.navigate("activity")
                 }
             )
             //account page

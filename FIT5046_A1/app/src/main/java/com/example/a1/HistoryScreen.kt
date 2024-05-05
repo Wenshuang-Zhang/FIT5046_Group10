@@ -48,14 +48,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import android.app.DatePickerDialog
-import android.os.Build
 import android.util.Log
 import android.widget.DatePicker
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.*
@@ -64,14 +61,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.DpOffset
 import androidx.navigation.NavHostController
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import java.time.LocalDate
 
 
-data class HistoryItem(val type: String, val kcal: Int, val trainingDate: LocalDate, val trainingTime: Int)
+data class HistoryItem(val type: String, val kcal: Int, val trainingDate: String, val trainingTime: Int)
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -88,6 +84,9 @@ fun HistoryScreen(navController: NavHostController) {
     val db = FirebaseFirestore.getInstance()
     val uid = FirebaseAuth.getInstance().currentUser?.uid
 
+    val yyyyMMddFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val MMMyyyyFormatter = DateTimeFormatter.ofPattern("MMM yyyy")
+
 
     LaunchedEffect(key1 = uid) {
         if (uid != null) {
@@ -98,15 +97,7 @@ fun HistoryScreen(navController: NavHostController) {
                         val type = document.getString("type") ?: "Unknown"
                         val kcal = document.getLong("kcal")?.toInt() ?: 0
                         val trainingTime = document.getLong("trainingTime")?.toInt() ?: 0
-
-                        // Assuming trainingDate is stored in a map-like structure in Firestore
-                        val dateMap = document.get("trainingDate") as? Map<String, Any> ?: continue
-                        val year = (dateMap["year"] as? Long)?.toInt() ?: continue
-                        val month = (dateMap["monthValue"] as? Long)?.toInt()
-                            ?: continue  // monthValue is 1-based
-                        val dayOfMonth = (dateMap["dayOfMonth"] as? Long)?.toInt() ?: continue
-
-                        val trainingDate = LocalDate.of(year, month, dayOfMonth)
+                        val trainingDate =  document.getString("trainingDate") ?: "Unknown"
 
                         val newItem = HistoryItem(type, kcal, trainingDate, trainingTime)
                         historyItems.add(newItem)
@@ -118,13 +109,6 @@ fun HistoryScreen(navController: NavHostController) {
         }
     }
 
-//    val historyItems = listOf(
-//        HistoryItem("CYCLING", 400, LocalDateTime.parse("12 Feb 2024", DateTimeFormatter.ofPattern("dd MMM yyyy"))),
-//        HistoryItem("HIIT", 500, LocalDateTime.parse("11 Feb 2024", DateTimeFormatter.ofPattern("dd MMM yyyy"))),
-//        HistoryItem("YOGA", 350, LocalDateTime.parse("10 Feb 2024", DateTimeFormatter.ofPattern("dd MMM yyyy"))),
-//        HistoryItem("TREADMILL", 420, LocalDateTime.parse("12 May 2023", DateTimeFormatter.ofPattern("dd MMM yyyy"))),
-//        HistoryItem("PILATES", 530, LocalDateTime.parse("11 May 2023", DateTimeFormatter.ofPattern("dd MMM yyyy")))
-//    )
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -152,7 +136,10 @@ fun HistoryScreen(navController: NavHostController) {
 
             LazyColumn(contentPadding = PaddingValues(all = 16.dp)) {
                 val groupedByMonth = historyItems.groupBy {
-                    it.trainingDate.format(DateTimeFormatter.ofPattern("MMM yyyy"))
+                    //it.trainingDate.format(DateTimeFormatter.ofPattern("MMM yyyy"))
+                    val date = LocalDate.parse(it.trainingDate, yyyyMMddFormatter)
+                    date.format(MMMyyyyFormatter)
+
                 }
                 groupedByMonth.forEach { (month, itemsInMonth) ->
                     stickyHeader {
@@ -272,7 +259,8 @@ fun AddDialog(historyItems: SnapshotStateList<HistoryItem>, onDismiss: () -> Uni
                     Button(onClick = { if (selectedTrainingType.isNotEmpty() && time.isNotEmpty()) {
                         val trainingTime = time.toIntOrNull() ?: 0
                         val kcal = calculateKcal(selectedTrainingType, trainingTime)
-                        val newItem = HistoryItem(selectedTrainingType, kcal, trainingDate, trainingTime)
+                        val formattedDate = trainingDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        val newItem = HistoryItem(selectedTrainingType, kcal, formattedDate, trainingTime)
                         historyItems.add(newItem)
                         uploadToFirebase(newItem)
                         onDismiss()
@@ -285,14 +273,20 @@ fun AddDialog(historyItems: SnapshotStateList<HistoryItem>, onDismiss: () -> Uni
     }
 }
 
-fun uploadToFirebase(item: HistoryItem) {
+fun uploadToFirebase(newItem: HistoryItem) {
     val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
     val uid = FirebaseAuth.getInstance().currentUser?.uid
 
     val db = FirebaseFirestore.getInstance()
+    val data = hashMapOf(
+        "type" to newItem.type,
+        "kcal" to newItem.kcal,
+        "trainingDate" to newItem.trainingDate,  // 假设这是格式化的日期字符串
+        "trainingTime" to newItem.trainingTime
+    )
     if (uid != null) {
-        db.collection("trainingHistory").document(uid).collection("cards").add(item)
+        db.collection("trainingHistory").document(uid).collection("cards").add(data)
     }
 }
 
@@ -344,8 +338,12 @@ fun calculateKcal(trainingType: String, trainingTime: Int): Int {
 
 @Composable
 fun HistoryCard(item: HistoryItem) {
+    val yyyyMMddFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val ddMMMyyyyFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
+
     val kcal = calculateKcal(item.type, item.trainingTime)
-    val formattedDate = item.trainingDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+    val formattedDate = LocalDate.parse(item.trainingDate, yyyyMMddFormatter).format(
+        ddMMMyyyyFormatter)
 
 
     Card(
