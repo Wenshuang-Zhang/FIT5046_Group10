@@ -238,7 +238,7 @@ fun ReportScreen(navController: NavHostController) {
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .fillMaxWidth()  // 确保图表充满水平空间
+                                    .fillMaxWidth()
                                     .height(250.dp)
                                     .background(Color.Transparent)
                             ) {
@@ -253,7 +253,7 @@ fun ReportScreen(navController: NavHostController) {
                             withStyle(style = SpanStyle(color = Color(0xFFB0C4DE), fontSize = 15.sp, fontWeight = FontWeight.Bold)) {
                                 append("       Average ")
                             }
-                            withStyle(style = SpanStyle(color = Color(0xFF151C57), fontSize = 20.sp, fontWeight = FontWeight.Bold)) { // 假设你想要突出显示平均值
+                            withStyle(style = SpanStyle(color = Color(0xFF151C57), fontSize = 20.sp, fontWeight = FontWeight.Bold)) {
                                 append("${averageTime.value} hours")
                             }
                             withStyle(style = SpanStyle(color = Color(0xFFB0C4DE), fontSize = 15.sp, fontWeight = FontWeight.Bold)) {
@@ -295,7 +295,7 @@ fun ReportScreen(navController: NavHostController) {
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .fillMaxWidth()  // 确保图表充满水平空间
+                                    .fillMaxWidth()
                                     .height(250.dp)
                                     .background(Color.Transparent)
                             ) {

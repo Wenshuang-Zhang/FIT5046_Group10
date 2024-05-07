@@ -73,7 +73,7 @@ fun HomeScreen(navController: NavHostController) {
     val context = LocalContext.current
 
     //get health data
-    var steps by remember { mutableStateOf("Loading...") }
+    var steps by remember { mutableStateOf("1") }
     var sleepHours by remember { mutableStateOf("Loading...") }
     var userName by remember { mutableStateOf("Loading...") }
     var percentage by remember { mutableStateOf(0.0f) }
