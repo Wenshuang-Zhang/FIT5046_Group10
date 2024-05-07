@@ -226,8 +226,8 @@ fun ProfileScreen(navController: NavHostController) {
                             onClick = {
                                 // Handle logout logic
                                 auth.signOut()
-                                navController.navigate("login") {
-                                    popUpTo("profile") {
+                                navController.navigate("welcome") {
+                                    popUpTo("welcome") {
                                         inclusive = true
                                     } // Clear back stack up to profile screen
                                 }
