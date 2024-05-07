@@ -49,12 +49,14 @@ android {
 }
 
 dependencies {
-
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     // Also add the dependency for the Google Play services library and specify its version
     implementation("com.google.android.gms:play-services-auth:21.1.0")
+    //implementation("com.facebook.android:facebook-android-sdk:[5,6)")
+
 
     // Add the dependency for the Firebase Authentication library
     implementation("com.google.firebase:firebase-auth")
@@ -75,7 +77,6 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation(composeBom)
     androidTestImplementation(composeBom)
-
     // Choose one of the following:
     // Material Design 3
     implementation("androidx.compose.material3:material3")
@@ -85,7 +86,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     // or only import the main APIs for the underlying toolkit systems,
     // such as input and measurement/layout
-    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui:")
 
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
