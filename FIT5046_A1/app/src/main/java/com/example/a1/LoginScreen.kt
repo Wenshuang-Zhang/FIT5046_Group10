@@ -149,7 +149,7 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(26.dp))
 
-            //sign in button
+            //Login button
             Button(
                 onClick = {
                     val auth1 = FirebaseAuth.getInstance()
@@ -198,38 +198,11 @@ fun LoginScreen(navController: NavHostController) {
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF776EE3))
             ) {
-                Text(text = "Sign in", color = Color.White, fontSize = 16.sp)
+                Text(text = "Login", color = Color.White, fontSize = 16.sp)
             }
 
+            Spacer(modifier = Modifier.height(100.dp))
 
-            //google sign in icon
-            Spacer(modifier = Modifier.height(26.dp))
-            Text(text = "Or continue with")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(width = 60.dp, height = 60.dp)
-                    .background(color = Color.White, shape = RoundedCornerShape(20.dp))
-                    .clickable {
-
-                    }
-            ){
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.g),
-                        contentDescription = "Google Login",
-                        modifier = Modifier
-                            .size(48.dp)
-                    )
-                }
-            }
         }
     }
 }
