@@ -299,7 +299,7 @@ fun AddInfoScreen(navController: NavHostController) {
                 }
             }
         ) {
-            Text("Fitness Now!", fontSize = 16.sp)
+            Text("Fitness Now!", fontSize = 16.sp, color = Color.White)
         }
     }
     }

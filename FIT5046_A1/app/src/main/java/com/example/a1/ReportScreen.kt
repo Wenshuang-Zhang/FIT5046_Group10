@@ -1,5 +1,6 @@
 package com.example.a1
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import java.util.Calendar
 
 import android.content.Context
 import android.graphics.Typeface
+import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
@@ -47,6 +49,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.viewinterop.AndroidView
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -59,6 +64,10 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.common.io.Files.append
+import com.facebook.share.model.ShareLinkContent
+import com.facebook.share.widget.ShareDialog
+import com.facebook.share.Sharer
+
 
 fun getLastSevenDays(): List<String> {
 
@@ -66,7 +75,7 @@ fun getLastSevenDays(): List<String> {
     val calendar = Calendar.getInstance()
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    // 包括今天在内，向后获取7天的日期
+    // get the previous 7 day info
     for (i in 0 until 7) {
         dates.add(dateFormat.format(calendar.time))
         calendar.add(Calendar.DATE, -1) // 往前回溯一天
@@ -90,7 +99,7 @@ fun loadKcalForDate(userId: String, db: FirebaseFirestore, date: String, onKcalR
         }
         .addOnFailureListener { e ->
             Log.w("Firestore", "Error fetching kcal for date $date: ", e)
-            onKcalReceived(0) // 处理失败情况
+            onKcalReceived(0)
         }
 }
 fun loadTrainingTimeForDate(userId: String, db: FirebaseFirestore, date: String, onKcalReceived: (Int) -> Unit) {
@@ -107,12 +116,13 @@ fun loadTrainingTimeForDate(userId: String, db: FirebaseFirestore, date: String,
         }
         .addOnFailureListener { e ->
             Log.w("Firestore", "Error fetching kcal for date $date: ", e)
-            onKcalReceived(0) // 处理失败情况
+            onKcalReceived(0)
         }
 }
 
 @Composable
 fun ReportScreen(navController: NavHostController) {
+    val callbackManager = CallbackManager.Factory.create()
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val db = FirebaseFirestore.getInstance()
     val dates = getLastSevenDays()
@@ -203,7 +213,7 @@ fun ReportScreen(navController: NavHostController) {
                         append(" per day")
                     }
                 }
-                //report 1 text
+                    //report 1 text
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
@@ -213,13 +223,51 @@ fun ReportScreen(navController: NavHostController) {
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                             )
+                            Spacer(modifier = Modifier.padding(horizontal = 40.dp))
 
+                            //share the link to facebook
+                            val shareContent = ShareLinkContent.Builder()
+                                .setContentUrl(Uri.parse("https://github.com/Wenshuang-Zhang/FIT5046_Group10"))
+                                .setQuote("I have burn an average ${averageKcal.value} kcal of exercise per day this week, good job! Come and join the FitnessHub to record the exercise and stay healthy!")
+                                .build()
+                            Box(
+                                modifier = Modifier
+                                    .clickable {
+                                        val shareDialog = ShareDialog(context as Activity)
+                                        shareDialog.registerCallback(
+                                            callbackManager, // Ensure you initialize CallbackManager
+                                            object : FacebookCallback<Sharer.Result> {
+                                                override fun onSuccess(result: Sharer.Result) {
+                                                    Toast.makeText(context, "Share successful", Toast.LENGTH_SHORT).show()
+                                                }
+
+                                                override fun onCancel() {
+                                                    Toast.makeText(context, "Share cancelled", Toast.LENGTH_SHORT).show()
+                                                }
+
+                                                override fun onError(error: FacebookException) {
+                                                    Toast.makeText(context, "Share failed: ${error.message}", Toast.LENGTH_LONG).show()
+                                                }
+                                            }
+                                        )
+                                        if (ShareDialog.canShow(ShareLinkContent::class.java)) {
+                                            shareDialog.show(shareContent)
+                                        }
+                                    }
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.export),
+                                        contentDescription = "Share",
+                                        tint = Color.Unspecified
+                                    )
+                                }
+                            }
                             Spacer(modifier = Modifier.padding(horizontal = 50.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.export),
-                                contentDescription = "Share",
-                                tint = Color(0xFFA2A8BE)
-                            )
                         }
                         Spacer(modifier = Modifier.height(10.dp)) //gap
 
@@ -243,10 +291,9 @@ fun ReportScreen(navController: NavHostController) {
                                     .background(Color.Transparent)
                             ) {
                                 KcalBarChart(kcalData = kcalData.value)
-// Placeholder for future chart
                             }
 
-                            }
+                        }
 
                             Spacer(modifier = Modifier.height(22.dp))//gap
                         val text2 = buildAnnotatedString {
@@ -260,6 +307,7 @@ fun ReportScreen(navController: NavHostController) {
                                 append(" per day")
                             }
                         }
+
                         //report 2 text
                         Row(
 
@@ -271,12 +319,52 @@ fun ReportScreen(navController: NavHostController) {
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 50.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.export),
-                                contentDescription = "Share",
-                                tint = Color(0xFFA2A8BE)
-                            )
+                            Spacer(modifier = Modifier.padding(horizontal = 40.dp))
+
+                            //share the link to facebook
+                            val shareContent = ShareLinkContent.Builder()
+                                .setContentUrl(Uri.parse("https://github.com/Wenshuang-Zhang/FIT5046_Group10"))
+                                .setQuote("I have burn an average ${averageTime.value} kcal of exercise per day this week, good job! Come and join the FitnessHub to record the exercise and stay healthy!")
+                                .build()
+
+                            Box(
+                                modifier = Modifier
+                                    .clickable {
+                                        val shareDialog = ShareDialog(context as Activity)
+                                        shareDialog.registerCallback(
+                                            callbackManager, // Ensure you initialize CallbackManager
+                                            object : FacebookCallback<Sharer.Result> {
+                                                override fun onSuccess(result: Sharer.Result) {
+                                                    Toast.makeText(context, "Share successful", Toast.LENGTH_SHORT).show()
+                                                }
+
+                                                override fun onCancel() {
+                                                    Toast.makeText(context, "Share cancelled", Toast.LENGTH_SHORT).show()
+                                                }
+
+                                                override fun onError(error: FacebookException) {
+                                                    Toast.makeText(context, "Share failed: ${error.message}", Toast.LENGTH_LONG).show()
+                                                }
+                                            }
+                                        )
+                                        if (ShareDialog.canShow(ShareLinkContent::class.java)) {
+                                            shareDialog.show(shareContent)
+                                        }
+                                    }
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.export),
+                                        contentDescription = "Share",
+                                        tint = Color.Unspecified
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.padding(horizontal = 10.dp))
+
                         }
                         Spacer(modifier = Modifier.height(12.dp))//gap
 
@@ -300,27 +388,25 @@ fun ReportScreen(navController: NavHostController) {
                                     .background(Color.Transparent)
                             ) {
                                 TimeBarChart(trainingTimeData = trainingTimeData.value)
-// Placeholder for future chart
                             }
                         }
-
-                        // Placeholder for the other chart
-
                     }
                 }
             }
 
 
 
+fun shareContentOnFacebook() {
 
+}
 
-
+//charts
 @Composable
 fun KcalBarChart(kcalData: Map<String, Int>) {
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(), // 确保视图使用所有可用的高度
+            .fillMaxHeight(),
         factory = { context ->
             BarChart(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -340,13 +426,12 @@ fun TimeBarChart(trainingTimeData: Map<String, Int>) {
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(), // 确保视图使用所有可用的高度
+            .fillMaxHeight(),
         factory = { context ->
             BarChart(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT,
-
                     )
             }
         },
@@ -366,9 +451,9 @@ private fun setupBarChartData(barChart: BarChart, kcalData: Map<String, Int>) {
         setDrawValues(false)
     }
     val barData = BarData(dataSet)
-    barData.barWidth = 0.2f  // 正确设置柱子宽度
+    barData.barWidth = 0.2f
 
-    // 应用这个包含宽度设置的 barData 到图表
+
     barChart.data = barData
     barChart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
         override fun onValueSelected(e: Entry?, h: Highlight?) {

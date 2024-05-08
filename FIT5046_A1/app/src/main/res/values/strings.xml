@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">A1</string>
-    <string name="default_web_client_id">412309860019-tdlln4lg6bp5eibvbhffdvct1pemv29t.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">412309860019-jbcr7vf063csuj4qcoclpatjkg6igrfa.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">2215804208774508</string>
+    <string name="facebook_client_token">2b8265c586266df9f8cf9eb9ef94c288</string>
 </resources>

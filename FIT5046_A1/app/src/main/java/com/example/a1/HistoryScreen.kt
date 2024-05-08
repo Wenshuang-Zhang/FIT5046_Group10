@@ -123,7 +123,7 @@ fun HistoryScreen(navController: NavHostController) {
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             Color(0xFFE4E4FC),
-                            Color(0xFFEAE8E1),
+                            Color(0xFFFAE8E1),
                         )
                     )
                 )

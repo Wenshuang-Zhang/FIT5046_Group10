@@ -1,46 +1,67 @@
-import android.widget.Toast
+import android.app.Activity.RESULT_OK
+import android.content.Context
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.material3.Button
 
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.a1.R
-import com.example.a1.SignUpScreen
-import com.example.a1.showDatePicker
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.random.Random
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 
+
+private lateinit var googleSignInClient: SignInClient
+private lateinit var signInRequest: BeginSignInRequest
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf(false) } // To handle login errors
-    val auth = FirebaseAuth.getInstance()  // Firebase Auth instance
+    var passwordVisible by remember { mutableStateOf(false) }
+    val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
+    //val clientId = stringResource(id = R.string.default_web_client_id)
+
 
     Column(
         modifier = Modifier
@@ -110,8 +131,16 @@ fun LoginScreen(navController: NavHostController) {
                 onValueChange = { password = it },
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
+                    androidx.compose.material3.IconButton(onClick = {
+                        passwordVisible = !passwordVisible
+                    }) {
+                        androidx.compose.material3.Icon(image, "Toggle password visibility")
+                    }
+                }
             )
 
             if (loginError) {
@@ -172,33 +201,21 @@ fun LoginScreen(navController: NavHostController) {
                 Text(text = "Sign in", color = Color.White, fontSize = 16.sp)
             }
 
-//            //login button
-//            Spacer(modifier = Modifier.height(26.dp))
-//            Button(
-//                onClick = {
-//                    navController.navigate("home") {
-//                    popUpTo("login") { inclusive = true }
-//                } },
-//                modifier = Modifier
-//                    .height(50.dp)
-//                    .width(180.dp),
-//                shape = RoundedCornerShape(25.dp),
-//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF776EE3))
-//            ) {
-//                Text(text = "Sign in", color = Color.White, fontSize = (16.sp))
-//            }
 
             //google sign in icon
             Spacer(modifier = Modifier.height(26.dp))
             Text(text = "Or continue with")
 
             Spacer(modifier = Modifier.height(16.dp))
+
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(width = 60.dp, height = 60.dp)
                     .background(color = Color.White, shape = RoundedCornerShape(20.dp))
-                    .clickable {  }
+                    .clickable {
+
+                    }
             ){
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -213,6 +230,17 @@ fun LoginScreen(navController: NavHostController) {
                     )
                 }
             }
+        }
+    }
+}
+
+fun firebaseAuthWithGoogle(idToken: String, auth: FirebaseAuth, navController: NavHostController) {
+    val credential = GoogleAuthProvider.getCredential(idToken, null)
+    auth.signInWithCredential(credential).addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            navController.navigate("YourHomeScreen")
+        } else {
+            // Handle the sign-in failure
         }
     }
 }
