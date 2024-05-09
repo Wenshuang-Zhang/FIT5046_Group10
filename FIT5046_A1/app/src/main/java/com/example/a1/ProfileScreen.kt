@@ -79,7 +79,14 @@ fun ProfileScreen(navController: NavHostController) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(colors = listOf(Color(0xFFE4E4FC), Color(0xFFFAE8E1))))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFE4E4FC),
+                        Color(0xFFFAE8E1)
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -151,6 +158,7 @@ fun ProfileScreen(navController: NavHostController) {
                             iconType = "dropdown"
                         )
                         // display the DropdownMenu when click expended button
+                        if(expanded){
                             DropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
@@ -169,83 +177,83 @@ fun ProfileScreen(navController: NavHostController) {
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 //Height
-                    InformationRow("Height (cm)", height, onValueChange = {
-                        height = it
-                        heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
-                    }, error = heightError)
+                InformationRow("Height (cm)", height, onValueChange = {
+                    height = it
+                    heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
+                }, error = heightError)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 //Weight
-                    InformationRow("Weight (kg)", weight, onValueChange = {
-                        weight = it
-                        weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
-                    }, error = weightError)
+                InformationRow("Weight (kg)", weight, onValueChange = {
+                    weight = it
+                    weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
+                }, error = weightError)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp)
+                ) {
+                    // save changes button
+                    Button(
+                        onClick = {
+                            saveUserInfo(
+                                db,
+                                uid,
+                                name,
+                                dateOfBirth,
+                                sex,
+                                height,
+                                weight,
+                                context
+                            )
+                        },
+                        shape = RoundedCornerShape(25.dp),
+                        modifier = Modifier
+                            .height(50.dp)
+                            .width(180.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3)),
+                    ) {
+                        Text("Save Changes", color = Color.White, fontSize = 16.sp)
+
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Column(
-                        verticalArrangement = Arrangement.SpaceEvenly,
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    //logout button
+                    Button(
+                        onClick = {
+                            // Handle logout logic
+                            auth.signOut()
+                            navController.navigate("welcome") {
+                                popUpTo("welcome") {
+                                    inclusive = true
+                                } // Clear back stack up to profile screen
+                            }
+                        },
+                        shape = RoundedCornerShape(25.dp),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp)
+                            .height(50.dp)
+                            .width(180.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3))
                     ) {
-                        // save changes button
-                        Button(
-                            onClick = {
-                                saveUserInfo(
-                                    db,
-                                    uid,
-                                    name,
-                                    dateOfBirth,
-                                    sex,
-                                    height,
-                                    weight,
-                                    context
-                                )
-                            },
-                            shape = RoundedCornerShape(25.dp),
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(180.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3)),
-                        ) {
-                            Text("Save Changes", color = Color.White, fontSize = 16.sp)
-
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        //logout button
-                        Button(
-                            onClick = {
-                                // Handle logout logic
-                                auth.signOut()
-                                navController.navigate("welcome") {
-                                    popUpTo("welcome") {
-                                        inclusive = true
-                                    } // Clear back stack up to profile screen
-                                }
-                            },
-                            shape = RoundedCornerShape(25.dp),
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(180.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF776EE3))
-                        ) {
-                            Text("Log out", color = Color.White, fontSize = 16.sp)
-                        }
-
-
+                        Text("Log out", color = Color.White, fontSize = 16.sp)
                     }
+
+
                 }
             }
-
         }
+
+    }
 
 
 
