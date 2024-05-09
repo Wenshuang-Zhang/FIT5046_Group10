@@ -140,6 +140,7 @@ fun ProfileScreen(navController: NavHostController) {
                         iconType = "calendar"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+
                     //sex
                     Box(modifier = Modifier.fillMaxWidth()) {
                         InformationRow(
@@ -149,9 +150,7 @@ fun ProfileScreen(navController: NavHostController) {
                             onClick = { expanded = !expanded },
                             iconType = "dropdown"
                         )
-
-                        // Conditionally display the DropdownMenu when 'expanded' is true
-                        if (expanded) {
+                        // display the DropdownMenu when click expended button
                             DropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
@@ -172,8 +171,7 @@ fun ProfileScreen(navController: NavHostController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-
-
+                //Height
                     InformationRow("Height (cm)", height, onValueChange = {
                         height = it
                         heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
@@ -181,6 +179,7 @@ fun ProfileScreen(navController: NavHostController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                //Weight
                     InformationRow("Weight (kg)", weight, onValueChange = {
                         weight = it
                         weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
@@ -248,7 +247,7 @@ fun ProfileScreen(navController: NavHostController) {
 
         }
 
-        //name
+
 
     }
 }
@@ -261,7 +260,7 @@ fun InformationRow(
     readOnly: Boolean = false,
     error: Boolean = false,
     onClick: (() -> Unit)? = null,
-    iconType: String = "calendar" // 默认为日历图标
+    iconType: String = "calendar"
 ) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, modifier = Modifier.weight(1f))
