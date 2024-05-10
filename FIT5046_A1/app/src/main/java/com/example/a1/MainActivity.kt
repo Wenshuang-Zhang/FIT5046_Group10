@@ -54,7 +54,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             A1Theme {
                 val navController = rememberNavController()
-                val mealManager = remember { MealManager() }
 
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
@@ -105,14 +104,14 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                 icon = {
                     if (currentRoute == "home") {
                         Icon(
-                            painterResource(id = R.drawable.home2), // 选中时的图标
+                            painterResource(id = R.drawable.home2), // selected icon
                             contentDescription = "Home2",
                             modifier = Modifier.size(24.dp),
                             tint = Color(0xFF1B225C)
                         )
                     }else {
                         Icon(
-                            painterResource(id = R.drawable.home), // 未选中时的图标
+                            painterResource(id = R.drawable.home),
                             contentDescription = "Home",
                             modifier = Modifier.size(24.dp),
                             tint = Color.Unspecified
@@ -132,14 +131,14 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                 icon = {
                     if (currentRoute == "report") {
                         Icon(
-                            painterResource(id = R.drawable.report2), // 选中时的图标
+                            painterResource(id = R.drawable.report2), // selected icon
                             contentDescription = "History2",
                             modifier = Modifier.size(24.dp),
                             tint = Color(0xFF1B225C)
                         )
                     } else {
                         Icon(
-                            painterResource(id = R.drawable.report), // 未选中时的图标
+                            painterResource(id = R.drawable.report),
                             contentDescription = "History",
                             modifier = Modifier.size(24.dp),
                             tint = Color.Unspecified
@@ -159,14 +158,14 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                 icon = {
                     if (currentRoute == "activity") {
                         Icon(
-                            painterResource(id = R.drawable.activity2), // 选中时的图标
+                            painterResource(id = R.drawable.activity2), // selected icon
                             contentDescription = "History2",
                             modifier = Modifier.size(24.dp),
                             tint = Color(0xFF1B225C)
                         )
                     } else {
                         Icon(
-                            painterResource(id = R.drawable.activity), // 未选中时的图标
+                            painterResource(id = R.drawable.activity),
                             contentDescription = "History",
                             modifier = Modifier.size(24.dp),
                             tint = Color.Unspecified
@@ -186,14 +185,14 @@ fun BottomNavigationBar(navController: NavController, height: Dp) {
                 icon = {
                     if (currentRoute == "profile") {
                         Icon(
-                            painterResource(id = R.drawable.account2), // 选中时的图标
+                            painterResource(id = R.drawable.account2), // selected icon
                             contentDescription = "Profile2",
                             modifier = Modifier.size(24.dp),
                             tint = Color(0xFF1B225C)
                         )
                     } else {
                         Icon(
-                            painterResource(id = R.drawable.account), // 未选中时的图标
+                            painterResource(id = R.drawable.account),
                             contentDescription = "Profile",
                             modifier = Modifier.size(24.dp),
                             tint = Color.Unspecified

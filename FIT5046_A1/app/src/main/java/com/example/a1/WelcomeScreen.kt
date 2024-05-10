@@ -33,7 +33,7 @@ fun WelcomeScreen(navController: NavController) {
             painter = painterResource(id = R.drawable.welcome),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop // 根据需要调整缩放方式
+            contentScale = ContentScale.Crop
         )
 
         Column(

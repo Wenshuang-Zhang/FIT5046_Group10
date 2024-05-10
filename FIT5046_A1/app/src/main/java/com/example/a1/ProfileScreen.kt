@@ -123,10 +123,25 @@ fun ProfileScreen(navController: NavHostController) {
                     modifier = Modifier
                         .padding(top = 10.dp, bottom = 10.dp, start = 24.dp, end = 24.dp)
                 ) {
-                    InformationRow("Name", name, onValueChange = {
-                        name = it
-                        nameError = it.any { char -> !char.isLetter() } || it.length > 20
-                    }, error = nameError)
+
+                    //name input
+                    InformationRow(
+                        "Name",
+                        name,
+                        onValueChange = {
+                            name = it
+                            nameError = it.any { char -> !char.isLetter() } || it.length > 20
+                        },
+                        error = nameError
+                    )
+                    if (nameError) {
+                        Text(
+                            "Please enter only letters, no more than 20 characters",
+                            color = MaterialTheme.colors.error,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
 
                     //date of birth
@@ -140,6 +155,7 @@ fun ProfileScreen(navController: NavHostController) {
                         iconType = "calendar"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+
                     //sex
                     Box(modifier = Modifier.fillMaxWidth()) {
                         InformationRow(
@@ -173,18 +189,46 @@ fun ProfileScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(16.dp))
 
 
+                    //height input
+                    InformationRow(
+                        "Height (cm)",
+                        height,
+                        onValueChange = {
+                            height = it
+                            heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
+                        },
+                        error = heightError
+                    )
 
-                    InformationRow("Height (cm)", height, onValueChange = {
-                        height = it
-                        heightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
-                    }, error = heightError)
+                    if (heightError) {
+                        Text(
+                            "Please enter a number between 1 and 400",  // Error message in Chinese: "Input must be a number between 1 and 400"
+                            color = MaterialTheme.colors.error,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    InformationRow("Weight (kg)", weight, onValueChange = {
-                        weight = it
-                        weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
-                    }, error = weightError)
+                    //weight input
+                    InformationRow(
+                        "Weight (kg)",
+                        weight,
+                        onValueChange = {
+                            weight = it
+                            weightError = it.toIntOrNull()?.let { num -> num < 1 || num > 400 } ?: true
+                        },
+                        error = weightError
+                    )
+                    if (weightError) {
+                        Text(
+                            "Please enter a number between 1 and 400",  // Error message in Chinese: "Input must be a number between 1 and 400"
+                            color = MaterialTheme.colors.error,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -261,7 +305,7 @@ fun InformationRow(
     readOnly: Boolean = false,
     error: Boolean = false,
     onClick: (() -> Unit)? = null,
-    iconType: String = "calendar" // 默认为日历图标
+    iconType: String = "calendar"
 ) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, modifier = Modifier.weight(1f))
@@ -299,9 +343,6 @@ fun InformationRow(
                 ),
                 modifier = Modifier.weight(2f)
             )
-            if (error) {
-                Text("Invalid input", color = Color.Red, style = MaterialTheme.typography.caption)
-            }
         }
     }
 }

@@ -58,6 +58,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -201,22 +202,33 @@ fun AddDialog(historyItems: SnapshotStateList<HistoryItem>, onDismiss: () -> Uni
                 var expanded by remember { mutableStateOf(false) }
                 //val trainingTypes = listOf("CYCLING", "HIIT", "YOGA", "TREADMILL", "PILATES")
 
-                if (showDatePicker) {
-                    DatePickerDialog(
-                        date = trainingDate,
-                        onDateSelected = { date ->
-                            trainingDate = date
-                            showDatePicker = false
-                        },
-                        onDismissRequest = { showDatePicker = false }
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFF776EE3), shape = RoundedCornerShape(5.dp))
+                        .height(28.dp)
+                        .width(120.dp),
+                    contentAlignment = Alignment.Center,
+                ){
+                    if (showDatePicker) {
+                        DatePickerDialog(
+                            date = trainingDate,
+                            onDateSelected = { date ->
+                                trainingDate = date
+                                showDatePicker = false
+                            },
+
+                            onDismissRequest = { showDatePicker = false }
+                        )
+                    }
+
+                    ClickableText(
+                        text = AnnotatedString(trainingDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))),
+                        onClick = { showDatePicker = true },
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
                     )
                 }
 
-                ClickableText(
-                    text = AnnotatedString(trainingDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))),
-                    onClick = { showDatePicker = true },
-                    style = MaterialTheme.typography.bodyLarge
-                )
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 

@@ -78,7 +78,7 @@ fun getLastSevenDays(): List<String> {
     // get the previous 7 day info
     for (i in 0 until 7) {
         dates.add(dateFormat.format(calendar.time))
-        calendar.add(Calendar.DATE, -1) // 往前回溯一天
+        calendar.add(Calendar.DATE, -1)
     }
 
     return dates
@@ -396,9 +396,6 @@ fun ReportScreen(navController: NavHostController) {
 
 
 
-fun shareContentOnFacebook() {
-
-}
 
 //charts
 @Composable
@@ -475,7 +472,7 @@ private fun setupBarChartData(barChart: BarChart, kcalData: Map<String, Int>) {
     barChart.axisLeft.textColor = Color(0xFF8A2BE2).toArgb()
     barChart.axisLeft.textSize = 7f
     barChart.legend.isEnabled = false
-    barChart.setExtraOffsets(10f, 0f, 10f, 20f) // 设置额外的偏移以减少边界
+    barChart.setExtraOffsets(10f, 0f, 10f, 20f)
     barChart.axisLeft.axisMinimum = 0f
     barChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
     barChart.xAxis.valueFormatter = IndexAxisValueFormatter(kcalData.keys.sorted())
@@ -499,8 +496,8 @@ private fun setupBarChartData(barChart: BarChart, kcalData: Map<String, Int>) {
         textColor = Color(0xFF151C57).toArgb()
         setDrawAxisLine(false)
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        setLabelCount(kcalData.size, false) // 确保所有标签都显示并且均匀分布
-        //labelRotationAngle = -45f // 根据需要调整标签旋转角度以避免重叠
+        setLabelCount(kcalData.size, false)
+        //labelRotationAngle = -45f
     }
 }
 
@@ -514,9 +511,8 @@ private fun setupTrainBarChartData(barChart: BarChart, trainingTimeData: Map<Str
         setDrawValues(false)
     }
     val barData = BarData(dataSet)
-    barData.barWidth = 0.2f  // 正确设置柱子宽度
+    barData.barWidth = 0.2f
 
-    // 应用这个包含宽度设置的 barData 到图表
     barChart.data = barData
     barChart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
         override fun onValueSelected(e: Entry?, h: Highlight?) {
@@ -562,8 +558,8 @@ private fun setupTrainBarChartData(barChart: BarChart, trainingTimeData: Map<Str
         textColor = Color(0xFF151C57).toArgb()
         setDrawAxisLine(false)
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        setLabelCount(trainingTimeData.size, false) // 确保所有标签都显示并且均匀分布
-        //labelRotationAngle = -45f // 根据需要调整标签旋转角度以避免重叠
+        setLabelCount(trainingTimeData.size, false)
+        //labelRotationAngle = -45f
     }
 }
 fun showDatePicker(context: Context, onDateSelected: (String) -> Unit) {
