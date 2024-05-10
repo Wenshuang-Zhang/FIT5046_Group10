@@ -1,5 +1,6 @@
 package com.example.a1
 
+import android.app.Application
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,8 +52,10 @@ import androidx.compose.ui.window.Dialog
 import java.time.format.DateTimeFormatter
 
 import android.app.DatePickerDialog
+import android.content.Context
 import android.util.Log
 import android.widget.DatePicker
+import android.widget.Toast
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
@@ -64,24 +67,164 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import androidx.room.Dao
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.PrimaryKey
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
+import androidx.room.Database
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.google.firebase.firestore.DocumentSnapshot
+import kotlinx.coroutines.flow.Flow
 
 
-data class HistoryItem(val type: String, val kcal: Int, val trainingDate: String, val trainingTime: Int)
+
+//data class HistoryItem(val type: String, val kcal: Int, val trainingDate: String, val trainingTime: Int)
+@Entity(tableName = "history_items")
+data class HistoryItem @JvmOverloads constructor(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val type: String,
+    val kcal: Int,
+    val trainingDate: String,
+    val trainingTime: Int
+)
+
+@Dao
+interface HistoryDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHistoryItem(item: HistoryItem)
+
+    @Query("SELECT * FROM history_items")
+    fun getAllHistoryItems(): Flow<List<HistoryItem>>
+}
+
+@Database(entities = [HistoryItem::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun historyDao(): HistoryDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "history_database"
+                ).fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+}
+
+
+class HistoryRepository(private val historyDao: HistoryDao) {
+    fun getAllHistoryItems(): Flow<List<HistoryItem>> {
+        return historyDao.getAllHistoryItems()
+    }
+
+    suspend fun insertItem(item: HistoryItem) {
+        historyDao.insertHistoryItem(item)
+    }
+}
+
+
+class HistoryViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: HistoryRepository
+    private val _showDialog = mutableStateOf(false)
+    val showDialog: State<Boolean> = _showDialog
+
+    fun toggleDialog(show: Boolean) {
+        _showDialog.value = show
+    }
+
+    init {
+        val dao = AppDatabase.getDatabase(application).historyDao()
+        repository = HistoryRepository(dao)
+    }
+
+    val allHistoryItems: LiveData<List<HistoryItem>> = repository.getAllHistoryItems().asLiveData()
+
+    fun addHistoryItem(item: HistoryItem) {
+        viewModelScope.launch {
+            repository.insertItem(item)
+        }
+    }
+
+    private val _historyItems = MutableLiveData<List<HistoryItem>>()
+    val historyItems: LiveData<List<HistoryItem>> = _historyItems
+
+    fun fetchHistoryItems() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("trainingHistory").document(uid).collection("cards")
+            .get()
+            .addOnSuccessListener { result ->
+                val items = result.mapNotNull { doc ->
+                    deserializeToHistoryItem(doc)
+                }
+                _historyItems.postValue(items)
+            }
+            .addOnFailureListener { exception ->
+                Log.w("Firestore", "Error getting documents: ", exception)
+            }
+    }
+    private fun deserializeToHistoryItem(document: DocumentSnapshot): HistoryItem? {
+        return if (document.exists()) {
+            val type = document.getString("type") ?: "Unknown"
+            val kcal = document.getLong("kcal")?.toInt() ?: 0
+            val trainingDate = document.getString("trainingDate") ?: ""
+            val trainingTime = document.getLong("trainingTime")?.toInt() ?: 0
+            HistoryItem(0, type, kcal, trainingDate, trainingTime)
+        } else null
+    }
+}
+
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HistoryScreen(navController: NavHostController) {
-    var showDialog by remember { mutableStateOf(false) }
+fun HistoryScreen(navController: NavHostController, viewModel: HistoryViewModel) {
+    //var showDialog by remember { mutableStateOf(false) }
     val historyItems = remember { mutableStateListOf<HistoryItem>() }
 
-    if (showDialog) {
-        AddDialog(historyItems) { showDialog = false }
+    val historyItems1 by viewModel.historyItems.observeAsState(emptyList())
+    //val showDialog by viewModel.showDialog.observeAsState(false)
+    val showDialog by viewModel.showDialog
+
+    LaunchedEffect(key1 = true) {
+        viewModel.fetchHistoryItems()
     }
+
+    if (showDialog) {
+        AddDialog(viewModel = viewModel, onDismiss = {
+            viewModel.toggleDialog(false)
+        })
+    }
+
+
+
+
+//    if (showDialog) {
+//        AddDialog(historyItems) { showDialog = false }
+//    }
 
     val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
@@ -103,7 +246,7 @@ fun HistoryScreen(navController: NavHostController) {
                         val trainingTime = document.getLong("trainingTime")?.toInt() ?: 0
                         val trainingDate =  document.getString("trainingDate") ?: "Unknown"
 
-                        val newItem = HistoryItem(type, kcal, trainingDate, trainingTime)
+                        val newItem = HistoryItem(0, type, kcal, trainingDate, trainingTime)
                         historyItems.add(newItem)
                     }
                 }
@@ -147,7 +290,7 @@ fun HistoryScreen(navController: NavHostController) {
             )
 
             LazyColumn(contentPadding = PaddingValues(all = 16.dp)) {
-                val groupedByMonth = historyItems.groupBy {
+                val groupedByMonth = historyItems1.groupBy {
                     //it.trainingDate.format(DateTimeFormatter.ofPattern("MMM yyyy"))
                     val date = LocalDate.parse(it.trainingDate, yyyyMMddFormatter)
                     date.format(MMMyyyyFormatter)
@@ -165,7 +308,7 @@ fun HistoryScreen(navController: NavHostController) {
         }
         //FloatingActionButton
         FloatingActionButton(
-            onClick = { showDialog = true },
+            onClick = { viewModel.toggleDialog(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(bottom = 15.dp, end = 16.dp),
@@ -182,7 +325,9 @@ fun HistoryScreen(navController: NavHostController) {
 
 
 @Composable
-fun AddDialog(historyItems: SnapshotStateList<HistoryItem>, onDismiss: () -> Unit) {
+fun AddDialog(
+    viewModel: HistoryViewModel,
+    onDismiss: () -> Unit) {
     val trainingTypes = listOf("CYCLING", "HIIT", "YOGA", "TREADMILL", "PILATES")
     var selectedTrainingType by remember { mutableStateOf(trainingTypes[0]) }
     var time by remember { mutableStateOf("") }
@@ -292,15 +437,20 @@ fun AddDialog(historyItems: SnapshotStateList<HistoryItem>, onDismiss: () -> Uni
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { if (selectedTrainingType.isNotEmpty() && time.isNotEmpty()) {
+
+                    Button(
+                        onClick = {
+                        if (selectedTrainingType.isNotEmpty() && time.isNotEmpty()) {
                         val trainingTime = time.toIntOrNull() ?: 0
                         val kcal = calculateKcal(selectedTrainingType, trainingTime)
                         val formattedDate = trainingDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        val newItem = HistoryItem(selectedTrainingType, kcal, formattedDate, trainingTime)
-                        historyItems.add(newItem)
+                        val newItem = HistoryItem(0, selectedTrainingType, kcal, formattedDate, trainingTime)
+                        viewModel.addHistoryItem(newItem)
+                        //historyItems.add(newItem)
                         uploadToFirebase(newItem)
                         onDismiss()
-                    } }) {
+                        }
+                    } ){
                         Text("Add", color = Color.White)
                     }
                 }

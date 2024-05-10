@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 
@@ -46,7 +47,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 
 class MainActivity : ComponentActivity() {
-    val db = FirebaseFirestore.getInstance()
+    //val db = FirebaseFirestore.getInstance()
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +58,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+
+                val historyViewModel: HistoryViewModel by viewModels()
 
                 Scaffold(
                     bottomBar = {
@@ -76,7 +80,7 @@ class MainActivity : ComponentActivity() {
 
                         composable("home") { HomeScreen(navController) }
                         composable("report") { ReportScreen(navController)}
-                        composable("activity") { HistoryScreen(navController)}
+                        composable("activity") { HistoryScreen(navController, historyViewModel)}
                         composable("profile") { ProfileScreen(navController) }
                     }
                 }
